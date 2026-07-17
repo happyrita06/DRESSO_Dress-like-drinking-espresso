@@ -116,10 +116,6 @@ npm run dev             # http://localhost:5173
 VITE_API_BASE_URL=http://localhost:5000/api
 ```
 
-### 3. 둘 다 실행하기
-
-터미널 두 개에서 각각 `npm run dev`를 실행하거나, 프로젝트 루트의 `start-dresso.bat`을 더블클릭하면 서버·클라이언트가 함께 실행되고 브라우저가 자동으로 열립니다.
-
 ## Vercel 배포
 
 `client`와 `server`는 별도의 Vercel 프로젝트 2개로 배포합니다 (하나의 저장소, 프로젝트만 분리).
