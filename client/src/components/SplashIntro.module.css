@@ -1,0 +1,36 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* no interactive content here, so it never needs to intercept clicks —
+     simpler and safer than toggling pointer-events across the timeline */
+  pointer-events: none;
+  /* Blurs whatever's behind (the site's own animated background) only for
+     as long as this overlay is mounted — it unmounts the instant the
+     rewind timeline finishes, so the blur naturally lifts exactly when the
+     intro animation ends, no separate timing to keep in sync. */
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.word {
+  display: flex;
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 12vw, 4.5rem);
+  font-weight: 700;
+  color: var(--color-ink);
+  text-shadow: var(--shadow-pop-pink);
+}
+
+.letter {
+  display: inline-block;
+  /* hidden by default so there's no flash-of-visible-text in the gap
+     between mount and the GSAP effect running — the JS drives it from
+     here, this is just the pre-JS resting state */
+  clip-path: inset(0% 100% 0% 0%);
+  transform: rotate(-6deg);
+  transform-origin: 0% 100%;
+}

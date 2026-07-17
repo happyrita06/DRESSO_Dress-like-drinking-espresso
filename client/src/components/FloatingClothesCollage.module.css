@@ -1,0 +1,129 @@
+.board {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 4 / 5;
+  flex: none;
+}
+
+.tile {
+  position: absolute;
+  aspect-ratio: 1 / 1;
+  transform: rotate(var(--base-rotate, 0deg));
+}
+
+.tile:nth-child(8n + 1) {
+  --base-rotate: -6deg;
+}
+
+.tile:nth-child(8n + 2) {
+  --base-rotate: 4deg;
+}
+
+.tile:nth-child(8n + 3) {
+  --base-rotate: -3deg;
+}
+
+.tile:nth-child(8n + 4) {
+  --base-rotate: 6deg;
+}
+
+.tile:nth-child(8n + 5) {
+  --base-rotate: -4deg;
+}
+
+.tile:nth-child(8n + 6) {
+  --base-rotate: 3deg;
+}
+
+.tile:nth-child(8n + 7) {
+  --base-rotate: -6deg;
+}
+
+.tile:nth-child(8n + 8) {
+  --base-rotate: 5deg;
+}
+
+/* Vintage collage sticker: a torn-paper mat (clip-path, deckled edge) behind
+   an undistorted, front-facing photo crop — the photo itself stays a clean
+   rectangular crop (object-fit: cover, no silhouette warping); only the
+   paper mat around it gets the jagged "torn/cut out" boundary, like a
+   sticker peeled off a manga-collage moodboard page. */
+.paper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 5px;
+  background: var(--color-surface);
+  clip-path: polygon(
+    0% 2%, 24% 0%, 49% 3%, 76% 0%, 100% 2%,
+    98% 26%, 100% 50%, 97% 74%, 100% 98%,
+    76% 100%, 50% 97%, 24% 100%, 0% 98%,
+    3% 74%, 0% 50%, 4% 26%
+  );
+  filter: drop-shadow(3px 5px 0 rgba(74, 16, 48, 0.3)) drop-shadow(0 3px 10px rgba(255, 116, 184, 0.3));
+}
+
+/* two alternate torn-edge silhouettes, cycled across tiles for variety */
+.tile:nth-child(3n + 2) .paper {
+  clip-path: polygon(
+    2% 0%, 27% 3%, 52% 0%, 78% 4%, 100% 0%,
+    97% 23%, 100% 48%, 96% 72%, 100% 100%,
+    73% 97%, 48% 100%, 22% 96%, 0% 100%,
+    4% 76%, 0% 51%, 3% 27%
+  );
+}
+
+.tile:nth-child(3n + 3) .paper {
+  clip-path: polygon(
+    3% 3%, 26% 0%, 50% 4%, 74% 0%, 97% 3%,
+    100% 27%, 96% 51%, 100% 75%, 97% 98%,
+    75% 100%, 51% 96%, 25% 100%, 3% 97%,
+    0% 73%, 4% 49%, 0% 25%
+  );
+}
+
+.photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  background: var(--color-surface);
+}
+
+/* manga halftone dusting over the sticker, tinted to the accent pink and
+   multiplied onto the photo so it reads as print texture, not a filter */
+.paper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, var(--vivid-pink) 1px, transparent 1.2px);
+  background-size: 6px 6px;
+  mix-blend-mode: multiply;
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tile {
+    animation: wiggle 3.4s ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+  }
+}
+
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(var(--base-rotate, 0deg)) translateY(0);
+  }
+  50% {
+    transform: rotate(calc(var(--base-rotate, 0deg) + 4deg)) translateY(-8px);
+  }
+}
+
+@media (min-width: 768px) {
+  .board {
+    max-width: 380px;
+  }
+}

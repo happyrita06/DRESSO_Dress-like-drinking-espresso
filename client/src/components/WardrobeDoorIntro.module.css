@@ -1,0 +1,168 @@
+.wrapper {
+  position: relative;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 26px 20px 6px;
+  /* Establishes the 3D space the doors swing through. */
+  perspective: 900px;
+}
+
+.stage {
+  /* Sized entirely by .svg below, which is a normal-flow element (not
+     absolutely positioned) so its intrinsic 400:300 viewBox ratio gives
+     .stage a real height — the doors then overlay it via percentages of
+     that established box. (An earlier version tried to size .stage with
+     `aspect-ratio` while every child was position:absolute; with no
+     in-flow content at all the box collapsed to zero height, taking the
+     whole illustration with it.) */
+  position: relative;
+  width: 100%;
+}
+
+.svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+/* ================= doors: hinge-mounted 3D swing =================
+   Plain HTML elements (not SVG <g>s) — GSAP's 3D transform (rotationY + z)
+   flattens to a 2D matrix() on SVG elements, since SVG's own transform
+   attribute has no 3D concept, so a hinge swing would silently no-op
+   there. As ordinary divs, direct children of .stage (itself a plain
+   descendant of the perspective-bearing .wrapper, with no intervening
+   transform to flatten the 3D context), they rotate in true CSS 3D. */
+.door {
+  position: absolute;
+  top: 8%;
+  height: 84%;
+  width: 41.5%;
+}
+
+.doorSvg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+/* Hinge pinned to the outer frame edge each door is attached to — the
+   fixed axis it rotates open around, rather than translating/sliding. */
+.doorLeft {
+  left: 8.5%;
+  transform-origin: 0% 50%;
+}
+
+.doorRight {
+  left: 50%;
+  transform-origin: 100% 50%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .doorLeft {
+    transform: perspective(900px) rotateY(-112deg);
+  }
+
+  .doorRight {
+    transform: perspective(900px) rotateY(112deg);
+  }
+}
+
+/* ================= interior parallax layers =================
+   Reuses the site-wide --px/--py written by useParallaxPointer (via
+   ParallaxBackground, mounted once at the app root) — no second pointer
+   listener here. Depth differs per layer so the back wall drifts less
+   than the rail/hangers/shelf in front of it, the same differential-depth
+   trick ParallaxBackground uses for its tiles. Plain 2D translate, which
+   (unlike the doors' 3D rotate) SVG's transform fully supports. */
+.parallaxBack {
+  transform-box: fill-box;
+  transform: translate(calc(var(--px, 0) * 3px), calc(var(--py, 0) * 3px));
+}
+
+.parallaxMid {
+  transform-box: fill-box;
+  transform: translate(calc(var(--px, 0) * 7px), calc(var(--py, 0) * 5px));
+}
+
+/* ================= hangers ================= */
+.hanger {
+  transform-box: fill-box;
+}
+
+/* ================= ambient sparkles ================= */
+.sparkle {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sparkle {
+    animation: twinkle 2.2s ease-in-out infinite;
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+/* ================= floating accessories ================= */
+.floater {
+  position: absolute;
+  z-index: 2;
+  width: 15%;
+  pointer-events: none;
+  /* Contact shadow that shifts with the same --px/--py "light source" the
+     rest of the page's parallax uses (see Card.module.css for the same
+     idea applied to box-shadow instead of a filter). */
+  filter: drop-shadow(calc(var(--px, 0) * 4px) calc(5px + var(--py, 0) * 4px) 4px rgba(74, 16, 48, 0.32));
+}
+
+.floaterSvg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.floaterHat {
+  top: -4%;
+  left: 6%;
+}
+
+.floaterBag {
+  top: -8%;
+  right: 4%;
+  width: 17%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .floaterHat {
+    animation: floatBob 5.2s ease-in-out infinite;
+  }
+  .floaterBag {
+    animation: floatBob 6.4s ease-in-out 0.4s infinite;
+  }
+}
+
+@keyframes floatBob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-7px) rotate(2deg);
+  }
+}
+
+@media (max-width: 420px) {
+  .wrapper {
+    padding: 20px 12px 4px;
+  }
+}

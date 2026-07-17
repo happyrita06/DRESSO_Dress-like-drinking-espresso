@@ -1,0 +1,130 @@
+.footer {
+  position: relative;
+  margin-top: var(--space-3xl);
+  background: var(--color-surface-alt);
+  overflow: hidden;
+}
+
+.washiTop {
+  position: absolute;
+  top: -3px;
+  left: -4%;
+  width: 108%;
+  height: 10px;
+  background: var(--washi-lavender);
+  transform: rotate(-0.6deg);
+  box-shadow: var(--shadow-sm);
+}
+
+.inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: var(--space-2xl) var(--space-lg) var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.logo {
+  align-self: flex-start;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--color-primary);
+  transform: rotate(-2deg);
+}
+
+.tagline {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  max-width: 40ch;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md) var(--space-lg);
+}
+
+.link {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  transition: color var(--transition-fast);
+}
+
+.link:hover {
+  color: var(--color-primary);
+}
+
+.social {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.socialIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--font-size-xs);
+  color: var(--color-ink-soft);
+  transition: transform var(--transition-base), color var(--transition-fast);
+}
+
+.socialIcon:nth-child(1) {
+  transform: rotate(-4deg);
+}
+
+.socialIcon:nth-child(3) {
+  transform: rotate(4deg);
+}
+
+.social:hover .socialIcon {
+  color: var(--color-secondary);
+}
+
+.bottom {
+  border-top: 1px dashed var(--color-border-strong);
+}
+
+.copyright {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: var(--space-md) var(--space-lg);
+  font-size: var(--font-size-xs);
+  color: var(--color-ink-faint);
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .inner {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-lg);
+  }
+
+  .links {
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+}
+
+@media (min-width: 1200px) {
+  .inner {
+    padding: var(--space-2xl) var(--space-xl) var(--space-xl);
+  }
+}

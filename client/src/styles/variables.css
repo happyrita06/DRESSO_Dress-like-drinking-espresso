@@ -1,0 +1,146 @@
+:root {
+  /* ================= Color: base & surface ================= */
+  /* Dreamy Y2K / dreamcore — soft pink & white, inspired by manga
+     halftone print texture and kawaii web design. */
+  --color-bg: #fff9fc;
+  --color-surface: #ffffff;
+  --color-surface-alt: #ffeaf5;
+  --color-border: #ffd8ec;
+  --color-border-strong: #ffbcd9;
+
+  /* ink: no true black/gray per the art direction — a deep berry-magenta
+     stands in for "dark" while staying inside the pink family */
+  --color-ink: #4a1030;
+  --color-ink-soft: #8c4a6e;
+  --color-ink-faint: #c589a8;
+
+  /* ================= Color: pastel family (fills, tags, chips) =================
+     the brief's core pink pastel plus a couple of soft Y2K/frutiger-aero
+     adjacent hues (lilac, baby blue, cream) for categorical contrast —
+     the artwork itself stays pink-only, the UI needs a bit more range */
+  --pastel-pink: #ffd8ec;
+  --pastel-yellow: #fff3d6;
+  --pastel-mint: #d9f5ea;
+  --pastel-lavender: #e8d9ff;
+  --pastel-sky: #d6eeff;
+
+  /* ================= Color: vivid family (CTA, accents, links) ================= */
+  --vivid-pink: #ff74b8;
+  --vivid-pink-dark: #ff4f9e;
+  --vivid-violet: #b36fe8;
+  --vivid-violet-dark: #9450c9;
+  --vivid-orange: #ffb84d;
+  --vivid-mint: #3dd9a8;
+
+  --color-primary: var(--vivid-pink);
+  --color-primary-dark: var(--vivid-pink-dark);
+  --color-secondary: var(--vivid-violet);
+  --color-secondary-dark: var(--vivid-violet-dark);
+  --color-accent: var(--vivid-orange);
+
+  --color-text: var(--color-ink);
+  --color-text-muted: var(--color-ink-soft);
+  --color-background: var(--color-bg);
+  --color-danger: #ff4560;
+  --color-success: var(--vivid-mint);
+
+  /* ================= Sparkle strips (decorative dividers) ================= */
+  --washi-pink: repeating-linear-gradient(
+    45deg,
+    var(--pastel-pink),
+    var(--pastel-pink) 8px,
+    var(--vivid-pink) 8px,
+    var(--vivid-pink) 16px
+  );
+  --washi-mint: repeating-linear-gradient(
+    45deg,
+    var(--pastel-mint),
+    var(--pastel-mint) 8px,
+    var(--vivid-mint) 8px,
+    var(--vivid-mint) 16px
+  );
+  --washi-lavender: repeating-linear-gradient(
+    45deg,
+    var(--pastel-lavender),
+    var(--pastel-lavender) 8px,
+    var(--vivid-violet) 8px,
+    var(--vivid-violet) 16px
+  );
+
+  /* ================= Type ================= */
+  /* Mona12 (noonnu.cc/font_page/1792) drives every piece of text in the app —
+     a 12px-grid bitmap font, paired with its Korean companion face for
+     Hangul glyphs Mona12 itself doesn't cover. Same stack for display and
+     body per the pixel-everything direction; only weight (400/700) differs. */
+  --font-pixel: 'Mona12', 'Mona12 Text KR', -apple-system, 'Apple SD Gothic Neo', sans-serif;
+  --font-display: var(--font-pixel);
+  --font-body: var(--font-pixel);
+
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-md: 1.125rem;
+  --font-size-lg: 1.5rem;
+  --font-size-xl: 2rem;
+  --font-size-2xl: 2.75rem;
+  --font-size-3xl: 3.5rem;
+
+  /* ================= Spacing scale ================= */
+  --space-3xs: 2px;
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* ================= Radius ================= */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 32px;
+  --radius-pill: 999px;
+  /* organic "sticker" blob edge for special accents */
+  --radius-blob: 255px 15px 225px 15px / 15px 225px 15px 255px;
+
+  /* ================= Shadow ================= */
+  --shadow-sm: 0 2px 10px rgba(255, 116, 184, 0.14);
+  --shadow-md: 0 4px 16px rgba(255, 116, 184, 0.2);
+  --shadow-soft: 0 12px 32px rgba(255, 116, 184, 0.18);
+  /* hard-edge "sticker" shadow for collage elements */
+  --shadow-pop: 4px 4px 0 rgba(74, 16, 48, 0.8);
+  --shadow-pop-sm: 3px 3px 0 rgba(74, 16, 48, 0.8);
+  --shadow-pop-pink: 4px 4px 0 rgba(255, 79, 158, 0.45);
+
+  /* ================= Motion ================= */
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.25s var(--ease-bounce);
+  --transition-slow: 0.4s var(--ease-bounce);
+
+  /* ================= Parallax/scroll state (JS-driven) =================
+     Written by useParallaxPointer (mouse, lerped -1..1) onto :root, and by
+     ParallaxBackground's ScrollTrigger (scroll progress, 0..1) — consumed
+     by the background tiles and by Card's dynamic shadow. These defaults
+     are what's in effect before JS attaches, and permanently under
+     prefers-reduced-motion (both writers no-op there), so everything that
+     reads them must degrade gracefully to these values. */
+  --px: 0;
+  --py: 0;
+  --scrollY: 0;
+
+  /* ================= Layering ================= */
+  --z-nav: 100;
+  --z-overlay: 200;
+
+  /*
+   * Breakpoints (reference only — CSS custom properties cannot be
+   * interpolated into @media conditions, so every module hardcodes
+   * these same values, mobile-first):
+   *   mobile:  360px+  (base styles, no query)
+   *   tablet:  768px+  (min-width: 768px)
+   *   desktop: 1200px+ (min-width: 1200px)
+   */
+}

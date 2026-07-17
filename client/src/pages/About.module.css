@@ -1,0 +1,195 @@
+.page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-md) var(--space-3xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.introText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  flex: 1;
+  min-width: 0;
+}
+
+.introCollage {
+  margin: 0 auto;
+}
+
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: var(--font-size-xs);
+  color: var(--color-secondary);
+}
+
+.title {
+  margin: 0;
+}
+
+.lede {
+  margin: 0;
+  color: var(--color-ink-soft);
+  max-width: 62ch;
+}
+
+/* ================= Steps ================= */
+
+.stepsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.stepsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
+}
+
+.stepCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.stepBadge {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-secondary);
+  color: var(--color-surface);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-variant-numeric: tabular-nums;
+}
+
+.stepTitle {
+  margin: 0;
+  font-size: var(--font-size-base);
+}
+
+.stepDescription {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-soft);
+}
+
+/* ================= Accordion ================= */
+
+.legalSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.accordion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.accordionItem {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.accordionHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--font-size-base);
+  color: var(--color-ink);
+}
+
+.accordionHeader:hover {
+  color: var(--color-primary);
+}
+
+.accordionIcon {
+  flex: none;
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+  line-height: 1;
+  color: var(--color-primary);
+  transition: transform var(--transition-base);
+}
+
+.accordionIconOpen {
+  transform: rotate(45deg);
+}
+
+.accordionPanel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--transition-base);
+}
+
+.accordionPanelOpen {
+  grid-template-rows: 1fr;
+}
+
+.accordionPanelInner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.accordionContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: 0 var(--space-lg) var(--space-lg);
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-soft);
+}
+
+@media (min-width: 768px) {
+  .intro {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .stepsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 1200px) {
+  .stepsGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

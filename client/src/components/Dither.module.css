@@ -1,0 +1,32 @@
+/* ParallaxBackground (z-index -2) paints its own fully opaque
+   background-color across the whole viewport, which would completely hide
+   this canvas if it painted underneath (any lower/equal-but-earlier
+   z-index gets covered by that opaque layer regardless of what's further
+   back). Sits at the same -1 tier as PixelSky/ShootingStars/
+   FloatingParticles instead, mounted last among them in App.jsx so it
+   paints on top of all of them as a semi-transparent tinted overlay.
+
+   No `image-rendering: pixelated` here (on purpose, unlike the app's other
+   pixel-art layers) — the whole point of drawing at 1 canvas-px per
+   `pixelSize` screen-px instead of 1:1 is performance (a few thousand
+   cells/frame instead of ~2 million), not a deliberate blocky look for
+   this particular effect. Actually computing at a truly fine grid (e.g.
+   pixelSize 0.1x smaller, ~10x more cells per axis = ~100x more work)
+   would need a WebGL shader to stay smooth; letting the browser's default
+   bilinear scaling blur the low-res buffer back up gets the same "no
+   visible grid" result far more cheaply. */
+.canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: -1;
+  image-rendering: auto;
+}
+
+@media (max-width: 767px) {
+  .canvas {
+    display: none;
+  }
+}

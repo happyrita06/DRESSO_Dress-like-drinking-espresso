@@ -1,0 +1,128 @@
+.page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-md) var(--space-3xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.authGate {
+  margin: var(--space-3xl) auto;
+  font-size: var(--font-size-base);
+  color: var(--color-ink-soft);
+  text-align: center;
+}
+
+.authLink {
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: var(--font-size-xs);
+  color: var(--color-secondary);
+}
+
+.title {
+  margin: 0;
+}
+
+.lede {
+  margin: 0;
+  color: var(--color-ink-soft);
+}
+
+.bestSection,
+.feedSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.sectionTitle {
+  margin: var(--space-sm) 0 0;
+}
+
+.bestGrid,
+.feedGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.segment {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--color-surface-alt);
+  border-radius: var(--radius-pill);
+  width: fit-content;
+}
+
+.segmentButton {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-soft);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+}
+
+.segmentButtonActive {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.status {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-soft);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-danger);
+}
+
+@media (min-width: 700px) {
+  .bestGrid,
+  .feedGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .bestGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .feedGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

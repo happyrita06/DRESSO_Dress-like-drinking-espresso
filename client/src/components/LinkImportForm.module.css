@@ -1,0 +1,116 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.urlRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-md);
+}
+
+.urlInput {
+  flex: 1 1 240px;
+}
+
+.fetchButton {
+  flex: none;
+  white-space: nowrap;
+}
+
+.error {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-danger);
+  background: rgba(255, 69, 96, 0.08);
+  border: 1.5px dashed var(--color-danger);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  width: fit-content;
+}
+
+.previewBox {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-2xs);
+  padding: var(--space-2xs);
+  max-width: 100%;
+  background: var(--color-surface-alt);
+  border: 1.5px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+}
+
+.previewImageWrap {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.previewImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.previewPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: var(--font-size-xs);
+  color: var(--color-ink-faint);
+  padding: var(--space-xs);
+}
+
+.previewFields {
+  flex: 1 1 160px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.categoryField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.categoryLabel {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  color: var(--color-ink);
+}
+
+.required {
+  color: var(--color-primary);
+  margin-left: 0.2rem;
+}
+
+.categorySelect {
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 0.8rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.categorySelect:focus-visible {
+  outline: none;
+  border-color: var(--vivid-violet);
+  box-shadow: 0 0 0 4px var(--pastel-lavender);
+}

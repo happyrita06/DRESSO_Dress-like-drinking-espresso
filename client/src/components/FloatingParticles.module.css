@@ -1,0 +1,71 @@
+/* Same fixed z-index band as PixelSky/ShootingStars (-1); mounted last in
+   DOM order in App.jsx so it paints in front of them at that shared index.
+
+   Perf note: dropped the per-particle box-shadow glow (a separate blurred
+   paint pass on top of the radial-gradient fill, ×N particles, all sitting
+   under the Header's backdrop-filter) and halved the particle count — see
+   GradientMesh.module.css for why anything blurred + animated behind a
+   backdrop-filter element is disproportionately expensive here. The flat
+   radial-gradient fill alone still reads as a soft glow. */
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+
+.particle {
+  position: absolute;
+  bottom: -5vh;
+  border-radius: 50%;
+  opacity: 0;
+  animation-name: floatUp;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
+.dot {
+  background: radial-gradient(circle, #fff 0%, var(--vivid-pink) 55%, transparent 100%);
+}
+
+.sparkle {
+  background: radial-gradient(circle, #fff 0%, var(--vivid-violet) 60%, transparent 100%);
+  border-radius: 2px;
+  transform: rotate(45deg);
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: var(--peak-opacity, 0.5);
+  }
+  50% {
+    transform: translate(var(--drift, 0), -55vh);
+  }
+  90% {
+    opacity: var(--peak-opacity, 0.5);
+  }
+  100% {
+    transform: translate(calc(var(--drift, 0) * 1.6), -110vh);
+    opacity: 0;
+  }
+}
+
+/* Off entirely on phones/tablets — see GradientMesh.module.css for the
+   same reasoning (display:none stops the animation outright, not just
+   its visual weight). */
+@media (max-width: 767px) {
+  .layer {
+    display: none;
+  }
+}
+
+:root[data-bg-paused='true'] .particle {
+  animation-play-state: paused;
+}

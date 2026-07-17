@@ -1,0 +1,270 @@
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  margin-top: var(--space-2xl);
+  padding: var(--space-xl) var(--space-lg) var(--space-2xl);
+}
+
+.boardHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-sm) var(--space-md);
+}
+
+.kicker {
+  width: 100%;
+  margin: 0;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--vivid-violet-dark);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  color: var(--color-ink);
+  text-wrap: balance;
+}
+
+.dateStamp {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-ink-soft);
+  background: var(--pastel-yellow);
+  border: 1.5px dashed var(--color-border-strong);
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-sm);
+  transform: rotate(3deg);
+  white-space: nowrap;
+}
+
+/* ---------------- Collage grid ---------------- */
+
+/* grid-auto-rows was a flat 130px, so at a narrower viewport the columns
+   got proportionally narrower but the row height didn't, drifting cards
+   away from square and making object-fit: cover crop harder. Tried tying
+   height to width via aspect-ratio instead, but that broke badly on the
+   "hero" cell specifically: it spans 2 columns AND 2 rows, and a
+   multi-row aspect-ratio item's height depends on the very row-track size
+   the grid is still trying to resolve — a circular case browsers don't
+   reliably solve, and it fell back to the raw <img> intrinsic pixel size,
+   blowing the grid width out (double scrollbars). clamp() keeps the
+   original single-fixed-height model (no per-item circular sizing) while
+   still shrinking the row height as the viewport narrows. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: clamp(80px, 12vw, 130px);
+  grid-auto-flow: dense;
+  gap: var(--space-lg) var(--space-md);
+}
+
+.wide {
+  grid-column: span 2;
+}
+
+.tall {
+  grid-row: span 2;
+}
+
+/* ---------------- Torn-paper card (same technique as
+   FloatingClothesCollage: a jagged clip-path "paper mat" behind an
+   undistorted photo/content, shadow via filter so it follows the cut edge) --------------- */
+
+.card {
+  position: relative;
+  transform: rotate(var(--rotate, 0deg));
+  transition: transform var(--transition-base);
+}
+
+.card:hover {
+  transform: rotate(var(--rotate, 0deg)) translateY(-5px) scale(1.03);
+}
+
+.cardInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  padding: 6px;
+  background: var(--color-surface);
+  filter: drop-shadow(3px 5px 0 rgba(74, 16, 48, 0.28)) drop-shadow(0 3px 10px rgba(255, 116, 184, 0.28));
+}
+
+.variantA .cardInner {
+  clip-path: polygon(
+    0% 2%, 24% 0%, 49% 3%, 76% 0%, 100% 2%,
+    98% 26%, 100% 50%, 97% 74%, 100% 98%,
+    76% 100%, 50% 97%, 24% 100%, 0% 98%,
+    3% 74%, 0% 50%, 4% 26%
+  );
+}
+
+.variantB .cardInner {
+  clip-path: polygon(
+    2% 0%, 27% 3%, 52% 0%, 78% 4%, 100% 0%,
+    97% 23%, 100% 48%, 96% 72%, 100% 100%,
+    73% 97%, 48% 100%, 22% 96%, 0% 100%,
+    4% 76%, 0% 51%, 3% 27%
+  );
+}
+
+.variantC .cardInner {
+  clip-path: polygon(
+    3% 3%, 26% 0%, 50% 4%, 74% 0%, 97% 3%,
+    100% 27%, 96% 51%, 100% 75%, 97% 98%,
+    75% 100%, 51% 96%, 25% 100%, 3% 97%,
+    0% 73%, 4% 49%, 0% 25%
+  );
+}
+
+.cardInner img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  background: var(--color-surface);
+}
+
+.cardLabel {
+  position: absolute;
+  left: 12px;
+  bottom: -9px;
+  background: var(--vivid-pink);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-sm);
+  transform: rotate(-3deg);
+  white-space: nowrap;
+}
+
+/* ---------------- Fabric / texture swatches (CSS-generated, no photos) --------------- */
+
+.textureSwatch {
+  width: 100%;
+  height: 100%;
+}
+
+.texKnit {
+  background-color: var(--tex-a);
+  background-image: repeating-linear-gradient(45deg, var(--tex-b) 0 6px, transparent 6px 12px);
+}
+
+.texWool {
+  background-color: var(--tex-a);
+  background-image: radial-gradient(circle at 25% 25%, var(--tex-b) 0 2px, transparent 2.5px),
+    radial-gradient(circle at 65% 65%, var(--tex-b) 0 2px, transparent 2.5px),
+    radial-gradient(circle at 25% 65%, var(--tex-b) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 65% 25%, var(--tex-b) 0 1.5px, transparent 2px);
+  background-size: 10px 10px;
+}
+
+.texFleece {
+  background-color: var(--tex-a);
+  background-image: radial-gradient(circle at 20% 30%, var(--tex-b) 0%, transparent 45%),
+    radial-gradient(circle at 75% 60%, var(--tex-b) 0%, transparent 40%),
+    radial-gradient(circle at 40% 85%, var(--tex-b) 0%, transparent 35%);
+  opacity: 0.9;
+}
+
+.texCorduroy {
+  background-color: var(--tex-a);
+  background-image: repeating-linear-gradient(90deg, var(--tex-b) 0 4px, transparent 4px 7px);
+}
+
+.texCotton {
+  background-color: var(--tex-a);
+  background-image: repeating-linear-gradient(0deg, var(--tex-b) 0 1px, transparent 1px 6px),
+    repeating-linear-gradient(90deg, var(--tex-b) 0 1px, transparent 1px 6px);
+}
+
+.texDenim {
+  background-color: var(--tex-a);
+  background-image: repeating-linear-gradient(45deg, var(--tex-b) 0 3px, transparent 3px 6px),
+    repeating-linear-gradient(45deg, var(--tex-b) 0 1px, transparent 1px 6px);
+  opacity: 0.95;
+}
+
+.texLinen {
+  background-color: var(--tex-a);
+  background-image: repeating-linear-gradient(0deg, var(--tex-b) 0 2px, transparent 2px 11px),
+    repeating-linear-gradient(90deg, var(--tex-b) 0 2px, transparent 2px 11px);
+  opacity: 0.85;
+}
+
+.texMesh {
+  background-color: var(--tex-a);
+  background-image: radial-gradient(var(--tex-b) 1.2px, transparent 1.6px);
+  background-size: 7px 7px;
+}
+
+/* ---------------- Palette + beauty ---------------- */
+
+.paletteRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  width: 100%;
+  height: 100%;
+  padding: var(--space-xs);
+}
+
+.swatchChip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.swatchColor {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.swatchHex {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--color-ink-soft);
+}
+
+.beautyRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  width: 100%;
+  height: 100%;
+}
+
+.beautyDot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm), inset 0 -4px 6px rgba(74, 16, 48, 0.2), inset 0 3px 5px rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 767px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}

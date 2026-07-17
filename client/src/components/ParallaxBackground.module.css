@@ -1,0 +1,122 @@
+/* Sits behind PixelSky (-1) and all real content. `perspective` on .root
+   plus a different `translateZ` per layer is what gives the tiles a sense
+   of depth staging (far layer reads smaller/hazier, near layer reads
+   bigger/crisper) even before anything moves. */
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  perspective: 1000px;
+  pointer-events: none;
+  background-color: var(--color-background);
+  contain: paint;
+}
+
+.stage {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+.layer {
+  position: absolute;
+  inset: -20%;
+  will-change: transform;
+}
+
+/* The actual parallax motion lives on this inner element (not .layer)
+   so the JS-driven mouse offset and the scroll offset (transform, via
+   --px/--py/--scrollY) never fight the CSS-keyframe auto-float baked
+   into .layer's own transform — independent transforms that compose.
+   No CSS transition here on purpose: both drivers already arrive
+   pre-smoothed (pointer via rAF lerp, scroll via ScrollTrigger scrub),
+   so a second, CSS-side smoothing pass would just add lag on top of lag. */
+.tile {
+  position: absolute;
+  inset: 0;
+  background-repeat: repeat;
+  will-change: transform;
+  transform: translate3d(
+    calc(var(--px, 0) * var(--depth-px, 0) * 1px),
+    calc(var(--py, 0) * var(--depth-px, 0) * 1px + (var(--scrollY, 0) - 0.5) * var(--depth-scroll, 0) * 1px),
+    0
+  );
+}
+
+.layerBack {
+  animation: floatBack 34s ease-in-out infinite;
+}
+.layerBack .tile {
+  --depth-px: 7;
+  --depth-scroll: 30;
+  background-size: 480px 480px;
+  opacity: 0.55;
+  filter: blur(1.2px);
+}
+
+.layerMid {
+  animation: floatMid 24s ease-in-out infinite;
+}
+.layerMid .tile {
+  --depth-px: 16;
+  --depth-scroll: 70;
+  background-size: 420px 420px;
+  background-position: 55px 35px;
+  opacity: 0.92;
+  /* mid layer reuses the clouds tile like .layerBack does, but at a
+     different scale/speed/depth already — this filter nudge is the last
+     bit of differentiation so it doesn't read as "the same layer twice",
+     without introducing a third art asset. */
+  filter: saturate(1.12) brightness(1.03);
+}
+
+.layerNear {
+  animation: floatNear 17s ease-in-out infinite;
+}
+.layerNear .tile {
+  --depth-px: 30;
+  --depth-scroll: 130;
+  background-size: 320px 320px;
+  opacity: 1;
+}
+
+@keyframes floatBack {
+  0%,
+  100% {
+    transform: translateZ(-220px) scale(1.16) translate(0, 0);
+  }
+  50% {
+    transform: translateZ(-220px) scale(1.16) translate(-10px, 8px);
+  }
+}
+
+@keyframes floatMid {
+  0%,
+  100% {
+    transform: translateZ(-60px) scale(1.03) translate(0, 0);
+  }
+  50% {
+    transform: translateZ(-60px) scale(1.03) translate(9px, -11px);
+  }
+}
+
+@keyframes floatNear {
+  0%,
+  100% {
+    transform: translateZ(30px) scale(0.98) translate(0, 0);
+  }
+  50% {
+    transform: translateZ(30px) scale(0.98) translate(-14px, 12px);
+  }
+}
+
+@media (max-width: 600px) {
+  .layerBack .tile {
+    filter: none;
+  }
+}
+
+/* Under reduced-motion neither hook attaches, so --px/--py/--scrollY stay
+   at their :root default of 0 and .tile's transform is inert — no rule
+   needed here beyond the global animation kill-switch in global.css. */

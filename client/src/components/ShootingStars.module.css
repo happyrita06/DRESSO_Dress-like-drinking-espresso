@@ -1,0 +1,27 @@
+/* Nearest/topmost background layer — see ShootingStars.jsx. Mounted after
+   PixelSky in App.jsx so, at the same z-index, DOM order puts it visually on
+   top of PixelSky's drifting clouds/twinkles, matching "a shooting star
+   crossing the whole screen should feel closest". */
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.star {
+  position: fixed;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.starSvg {
+  display: block;
+  overflow: visible;
+}
+
+/* The whole layer is skipped in JS under prefers-reduced-motion (see the
+   component), so no @media override is needed here — nothing ever mounts. */

@@ -1,0 +1,88 @@
+/* ParallaxBackground (-2) paints its own fully opaque background-color
+   across the whole viewport, which completely hid this layer when it sat
+   behind that at -3 — the "soft glow" blobs were rendering, just never
+   visible. Sits at the same -1 tier as PixelSky/ShootingStars/
+   FloatingParticles/Dither instead now, mounted first among them in
+   App.jsx so the pixel-art sky layers still paint on top of the glow
+   instead of being covered by it.
+
+   Perf note: mix-blend-mode + filter:blur + animated transform, all
+   underneath the Header's backdrop-filter, was expensive enough to cause
+   visible jank — a blended/blurred layer that changes every frame forces
+   the browser to resample whatever sits on top of it (the Header's glass)
+   on every frame too, not just on scroll. Dropped the blend modes (plain
+   alpha over the flat page background composites far more cheaply) and
+   cut blob count/size/blur so there's simply less pixel area being
+   blurred and animated at once. */
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+
+/* Smaller + less blurred than the original -3 design: now actually
+   visible (see .root comment), blur(44px) over a 38vmax circle turned out
+   to cost ~11fps of GPU compositing time once it was — a blurred layer
+   this large forces the browser to resample a big chunk of the viewport
+   every frame it's composited under the animated Dither canvas above it.
+   The radial-gradient itself already fades to transparent at the edge, so
+   a much smaller blur radius reads just as "soft" at a fraction of the
+   cost. */
+.blob {
+  position: absolute;
+  width: 30vmax;
+  height: 30vmax;
+  border-radius: 50%;
+  filter: blur(22px);
+  opacity: 0.4;
+  will-change: transform;
+}
+
+.blobPink {
+  top: -14vmax;
+  left: -10vmax;
+  background: radial-gradient(circle at 40% 40%, var(--vivid-pink) 0%, transparent 70%);
+  animation: driftA 30s ease-in-out infinite;
+}
+
+/* Bottom-right instead of the original top-right — with the third
+   (bottom-left) blob gone, this is repositioned lower so the glow still
+   reaches the bottom half of the viewport instead of leaving it bare. */
+.blobLavender {
+  bottom: -16vmax;
+  right: -10vmax;
+  background: radial-gradient(circle at 60% 60%, var(--vivid-violet) 0%, transparent 70%);
+  animation: driftB 36s ease-in-out infinite;
+}
+
+@keyframes driftA {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(5vmax, 4vmax) scale(1.06); }
+}
+
+@keyframes driftB {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-4vmax, -6vmax) scale(1.04); }
+}
+
+/* Off entirely on phones/tablets (not just toned down) — display:none
+   removes the layer from the render tree so the animation and its blur
+   cost nothing there, which is exactly where the extra layers hurt most. */
+@media (max-width: 767px) {
+  .root {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blob {
+    animation: none;
+  }
+}
+
+:root[data-bg-paused='true'] .blob {
+  animation-play-state: paused;
+}

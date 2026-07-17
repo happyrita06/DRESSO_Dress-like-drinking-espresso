@@ -1,0 +1,108 @@
+.card {
+  --rotation: 0deg;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  background: #fff;
+  padding: 10px 10px 14px;
+  border-radius: 3px;
+  box-shadow: var(--shadow-soft);
+  transform: rotate(var(--rotation));
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.card:hover {
+  position: relative;
+  z-index: 2;
+  transform: rotate(0deg) scale(1.08);
+  box-shadow: var(--shadow-pop);
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:focus-visible {
+  outline: 2px solid var(--vivid-violet);
+  outline-offset: 3px;
+}
+
+.selected {
+  box-shadow: 0 0 0 3px var(--vivid-violet), var(--shadow-pop);
+}
+
+/* 0.70x sizing (applied twice now — 1x -> 0.7x -> 0.49x of the original
+   card) for contexts where the default card reads too large — the Share
+   fits combo picker, specifically, where the grid pushed the "썸네일 직접
+   올리기" label below it out of view. Scales the same properties the base
+   .card/.placeholder/.title rules set, so it stays a proportional shrink
+   rather than a separate look. */
+.compact {
+  gap: 2.9px;
+  padding: 3.9px 3.9px 5.4px;
+}
+
+.compact .placeholder {
+  font-size: 0.81rem;
+}
+
+.compact .title {
+  font-size: 0.32rem;
+}
+
+.photo {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: var(--color-surface-alt);
+  overflow: hidden;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  /* torn-paper edge: an irregular polygon nibbled in from all four sides */
+  clip-path: polygon(
+    2% 5%, 9% 1%, 18% 4%, 27% 0%, 37% 3%, 47% 0%, 57% 4%, 67% 1%, 77% 4%, 88% 1%, 98% 5%,
+    100% 14%, 96% 24%, 100% 34%, 97% 44%, 100% 54%, 96% 64%, 100% 74%, 97% 84%, 100% 95%,
+    91% 99%, 82% 96%, 72% 100%, 62% 97%, 52% 100%, 42% 96%, 32% 100%, 22% 97%, 12% 100%, 2% 96%,
+    0% 86%, 4% 76%, 0% 66%, 3% 56%, 0% 46%, 4% 36%, 0% 26%, 3% 16%, 0% 6%
+  );
+}
+
+.placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2.2rem;
+  color: var(--color-ink-faint);
+}
+
+.caption {
+  padding: 0 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}

@@ -1,0 +1,128 @@
+.modalContent {
+  max-width: 720px;
+  width: 100%;
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  padding: var(--space-2xs);
+}
+
+.closeButton:hover {
+  color: var(--color-ink);
+}
+
+.board {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  min-height: 140px;
+  padding: var(--space-md);
+  background: var(--color-surface-alt);
+  border: 1.5px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+}
+
+.boardEmpty {
+  margin: auto;
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-soft);
+}
+
+.boardCard {
+  /* !important: CollageCard's own base rule sets width: 100% on the same
+     element, which otherwise wins this fixed size by source-order chance */
+  width: 55px !important;
+  flex: none;
+}
+
+.categoryRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.categoryLabel {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  color: var(--color-ink);
+}
+
+.categoryEmpty {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-ink-faint);
+}
+
+.itemScroll {
+  display: flex;
+  gap: var(--space-sm);
+  overflow-x: auto;
+  padding-bottom: var(--space-2xs);
+}
+
+.pickCard {
+  flex: none;
+  /* !important: see .boardCard comment above */
+  width: 50px !important;
+}
+
+.nameField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.nameInput {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 0.8rem;
+}
+
+.nameInput:focus-visible {
+  outline: none;
+  border-color: var(--vivid-violet);
+  box-shadow: 0 0 0 4px var(--pastel-lavender);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-danger);
+}
+
+.saved {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-success);
+}

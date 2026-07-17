@@ -1,0 +1,443 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-nav);
+  /* More opaque than a typical glass panel on purpose: with the animated
+     gradient-mesh/particle layers now moving behind it, a lighter tint let
+     too much of that busy color bleed through and the nav text read as
+     hazy. This keeps a frosted edge (blur) without losing legibility. */
+  background: rgba(255, 249, 252, 0.94);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 0 0 rgba(74, 16, 48, 0);
+  transition: box-shadow var(--transition-base);
+}
+
+/* sparkle-strip edge along the bottom of the nav bar */
+.header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 3px;
+  background: var(--washi-pink);
+  opacity: 0.9;
+}
+
+.header.scrolled {
+  box-shadow: var(--shadow-sm);
+}
+
+.header.scrolled.shadowStrong {
+  box-shadow: var(--shadow-md);
+}
+
+.bar {
+  max-width: 1320px;
+  margin: 0 auto;
+  min-height: 64px;
+  padding: 0 var(--space-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+/* ---------------- Logo ---------------- */
+
+/* Textured-edge typography, redone after a "spray paint / smudged stencil"
+   poster reference (bold flat-color glyphs with a rough, bled edge — not a
+   clean torn-paper stripe fill) — pink only, no violet. The #logoRoughEdge
+   SVG filter (defined inline above, feTurbulence + feDisplacementMap)
+   roughens the glyph outlines into that spray-stencil fray instead of the
+   font's clean vector curves. `::before` duplicates the same text in a
+   lighter pink, blurred and offset behind the crisp glyphs, to read as
+   paint bleeding out past the stencil edge the way the reference posters
+   do — the actual "textured edge" part, not just a rough outline. */
+.logo {
+  position: relative;
+  flex: none;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.7rem;
+  color: var(--vivid-pink);
+  letter-spacing: 0.01em;
+  /* Level/horizontal now (no rotation) — the standout effect below carries
+     the "pops out" job instead of a tilt. */
+  transition: transform var(--transition-base), filter var(--transition-fast);
+  display: inline-block;
+  filter: url(#logoRoughEdge) drop-shadow(1px 2px 0 rgba(255, 79, 158, 0.5));
+}
+
+/* Paint-bleed halo (see the block comment above) now also breathes — a
+   slow pulsing blur/opacity loop — so the logo stays visually "alive" and
+   draws the eye even at rest, not just on hover. */
+.logo::before {
+  content: 'Dresso';
+  position: absolute;
+  inset: 0;
+  color: var(--pastel-pink);
+  filter: url(#logoRoughEdge) blur(2.5px);
+  z-index: -1;
+  pointer-events: none;
+  animation: logoGlowPulse 2.6s ease-in-out infinite;
+}
+
+.logo:hover,
+.logo:focus-visible {
+  transform: scale(1.12);
+  filter: url(#logoRoughEdge) drop-shadow(0 0 10px rgba(255, 116, 184, 0.6));
+}
+
+@keyframes logoGlowPulse {
+  0%, 100% {
+    opacity: 0.65;
+    filter: url(#logoRoughEdge) blur(2.5px);
+  }
+  50% {
+    opacity: 1;
+    filter: url(#logoRoughEdge) blur(5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo::before {
+    animation: none;
+  }
+}
+
+/* ---------------- Desktop nav (>=1280px) ---------------- */
+/* Switches later than the app's usual 1200px desktop breakpoint: the full
+   nav (8 links + divider + auth buttons) needs more room than 1200px gives
+   it, or the last nav link and the auth buttons overlap. */
+
+.desktopNav {
+  display: none;
+  align-items: center;
+  gap: var(--space-lg);
+  min-width: 0;
+}
+
+.primaryList,
+.secondaryList,
+.overlayPrimaryList,
+.overlaySecondaryList {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.primaryList {
+  gap: var(--space-lg);
+}
+
+.secondaryList {
+  gap: var(--space-md);
+}
+
+.navDivider {
+  width: 0;
+  height: 22px;
+  border-left: 2px dashed var(--color-border-strong);
+  transform: rotate(4deg);
+}
+
+.navLink {
+  position: relative;
+  display: inline-block;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-soft);
+  padding: 0.45rem 0.1rem;
+  white-space: nowrap;
+  transition: color var(--transition-fast);
+}
+
+.navLink::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.2rem;
+  height: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition-base);
+}
+
+.navLink:hover {
+  color: var(--color-ink);
+}
+
+.navLinkActive {
+  color: var(--color-primary);
+}
+
+.navLinkActive::after {
+  transform: scaleX(1);
+}
+
+.secondaryLink {
+  position: relative;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--font-size-xs);
+  color: var(--color-ink-faint);
+  padding: 0.45rem 0.1rem;
+  white-space: nowrap;
+  transition: color var(--transition-fast);
+}
+
+.secondaryLink:hover {
+  color: var(--color-secondary);
+}
+
+.secondaryLinkActive {
+  color: var(--color-secondary);
+}
+
+.secondaryLinkActive::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.2rem;
+  height: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--color-secondary);
+}
+
+/* ---------------- Auth area & hamburger ---------------- */
+
+.authArea {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.authLink {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-soft);
+  padding: 0.5rem 0.3rem;
+  transition: color var(--transition-fast);
+}
+
+.authLink:hover {
+  color: var(--color-ink);
+}
+
+.authCta {
+  display: none;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  color: #fff;
+  background: var(--color-primary);
+  padding: 0.55rem 1.15rem;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-base), background-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.authCta:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-pop-pink);
+}
+
+.profileBadge,
+.profileBadgeLarge {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--pastel-lavender);
+  color: var(--vivid-violet-dark);
+  font-family: var(--font-display);
+  font-weight: 700;
+  border: 2px solid var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-base);
+  overflow: hidden;
+}
+
+.profileBadgeImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profileBadge {
+  width: 40px;
+  height: 40px;
+  font-size: 1.05rem;
+}
+
+.profileBadge:hover {
+  transform: scale(1.1);
+}
+
+.profileBadgeLarge {
+  width: 56px;
+  height: 56px;
+  font-size: 1.4rem;
+}
+
+.hamburger {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.hamburgerBox {
+  position: relative;
+  width: 24px;
+  height: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hamburgerLine {
+  display: block;
+  height: 3px;
+  width: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--color-ink);
+  transition: transform var(--transition-base), opacity var(--transition-fast);
+}
+
+.hamburgerBoxOpen .hamburgerLine:nth-child(1) {
+  transform: translateY(7.5px) rotate(45deg);
+}
+
+.hamburgerBoxOpen .hamburgerLine:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburgerBoxOpen .hamburgerLine:nth-child(3) {
+  transform: translateY(-7.5px) rotate(-45deg);
+}
+
+/* ---------------- Mobile / tablet full-screen overlay menu ---------------- */
+
+.overlay {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-overlay);
+  background: var(--color-bg);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* flex-start (not center) so tall menus stay scrollable from the top —
+     centering along the scroll axis clips overflowing content above the fold */
+  justify-content: flex-start;
+  padding: var(--space-2xl) var(--space-lg);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-14px);
+  transition: opacity var(--transition-slow), transform var(--transition-slow),
+    visibility 0s linear var(--transition-slow);
+}
+
+.overlayOpen {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition: opacity var(--transition-slow), transform var(--transition-slow), visibility 0s;
+}
+
+.overlay nav {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.overlayPrimaryList {
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  width: 100%;
+}
+
+.overlayPrimaryList .navLink {
+  font-family: var(--font-display);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.overlayPrimaryList .navLinkActive {
+  color: var(--color-primary);
+}
+
+.overlaySecondaryList {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-lg);
+}
+
+.overlayAuth {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+/* ---------------- Breakpoints ---------------- */
+
+@media (min-width: 768px) {
+  .bar {
+    padding: 0 var(--space-xl);
+  }
+
+  .authCta {
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+@media (min-width: 1200px) {
+  .bar {
+    min-height: 76px;
+  }
+
+  .logo {
+    font-size: 1.9rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .desktopNav {
+    display: flex;
+  }
+
+  .hamburger,
+  .overlay {
+    display: none;
+  }
+}

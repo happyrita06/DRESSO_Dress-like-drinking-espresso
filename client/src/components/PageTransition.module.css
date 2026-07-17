@@ -1,0 +1,26 @@
+/* No `will-change` here (deliberately) — it's a static rule that would
+   keep this subtree GPU-layer-promoted permanently, not just during the
+   ~0.5s a route transition actually runs, which drops all page text out
+   of subpixel antialiasing app-wide. PageTransition.jsx toggles it on the
+   element only for the duration of the tween instead. */
+.stage {
+  transform-origin: 50% 40%;
+}
+
+/* Camera-flash wipe: covers the instant page swap, then fades out fast so
+   it reads as a cut rather than a lingering overlay. Starts fully
+   transparent — GSAP flips it to visible right before the swap. */
+.flash {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  background: radial-gradient(
+    circle at 50% 35%,
+    rgba(255, 255, 255, 0.92) 0%,
+    var(--pastel-pink) 45%,
+    rgba(255, 216, 236, 0) 80%
+  );
+}

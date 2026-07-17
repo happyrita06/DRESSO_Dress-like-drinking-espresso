@@ -1,0 +1,109 @@
+.button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  font-family: var(--font-body);
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform var(--transition-base), background-color var(--transition-fast),
+    color var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+/* click ripple: pixel-square burst from the pointer position, echoing the
+   app's hard-edge sticker shadows rather than a soft material ripple */
+.ripple {
+  position: absolute;
+  transform: translate(-50%, -50%) scale(0);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.55);
+  pointer-events: none;
+  animation: rippleBurst 0.55s ease-out forwards;
+}
+
+@keyframes rippleBurst {
+  from {
+    transform: translate(-50%, -50%) scale(0) rotate(0deg);
+    opacity: 0.8;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1) rotate(20deg);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ripple {
+    display: none;
+  }
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--vivid-violet);
+  outline-offset: 2px;
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(1px) scale(0.98);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* ---------------- Sizes ---------------- */
+
+.md {
+  padding: 0.7rem 1.4rem;
+  font-size: var(--font-size-sm);
+}
+
+.lg {
+  padding: 0.85rem 1.8rem;
+  font-size: var(--font-size-md);
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+/* ---------------- Variants ---------------- */
+
+.primary {
+  color: #fff;
+  background-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.primary:hover:not(:disabled) {
+  background-color: var(--color-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-pop-pink), 0 0 18px rgba(255, 116, 184, 0.5);
+}
+
+.secondary {
+  color: var(--color-secondary-dark);
+  background-color: transparent;
+  border: 2px solid var(--color-secondary);
+}
+
+.secondary:hover:not(:disabled) {
+  background-color: var(--pastel-lavender);
+  transform: translateY(-2px);
+}
+
+.ghost {
+  color: var(--color-ink-soft);
+  background-color: transparent;
+  padding-inline: 0.6rem;
+}
+
+.ghost:hover:not(:disabled) {
+  color: var(--color-ink);
+  background-color: var(--color-surface-alt);
+}

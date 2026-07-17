@@ -1,0 +1,220 @@
+.page {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-md) var(--space-3xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: var(--font-size-xs);
+  color: var(--color-secondary);
+}
+
+.title {
+  margin: 0;
+}
+
+.lede {
+  margin: 0;
+  color: var(--color-ink-soft);
+  max-width: 60ch;
+}
+
+.hint,
+.status {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-soft);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-danger);
+}
+
+/* `minmax(0, 1fr)` (not bare `1fr`) on every breakpoint below is load-
+   bearing: a plain `1fr` track can't shrink past its content's min-content
+   width, so day cards wider than their fair share silently pushed the grid
+   past the viewport — with no scrollbar (html/body run `overflow-x: hidden`
+   globally to contain the parallax background layers, see global.css), the
+   overflow columns (Mon onward) were just invisible and unreachable rather
+   than scrollable. */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-md);
+}
+
+.dayCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.dayCardEmpty {
+  opacity: 0.6;
+}
+
+.dayHead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+}
+
+.weekday {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--font-size-md);
+  color: var(--color-ink);
+}
+
+.dateLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-ink-faint);
+}
+
+.todayBadge {
+  margin-left: auto;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-primary);
+  background: var(--pastel-pink);
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--radius-pill);
+}
+
+.pending {
+  margin: var(--space-md) 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-faint);
+}
+
+.weatherRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.tempRange {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.tempMax {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--color-ink);
+}
+
+.tempMin {
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-faint);
+}
+
+.skyLabel {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-ink-soft);
+}
+
+.outfitSummary {
+  display: flex;
+  gap: var(--space-xs);
+  padding-top: var(--space-xs);
+  border-top: 1px dashed var(--color-border-strong);
+}
+
+.outfitItem {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.outfitLine {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.comment {
+  margin: var(--space-xs) 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-secondary);
+  font-style: italic;
+}
+
+/* Below 480px: single column (the base .grid rule above).
+   480–799px (large phone / narrow tablet): 2 per row.
+   800–1199px (a laptop window resized to roughly half its screen): 4 per
+   row — the 7-column full week doesn't fit comfortably at this width.
+   >=1200px (full-width desktop): all 7 days in one row. */
+@media (min-width: 480px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 800px) {
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-sm);
+  }
+}
+
+@media (min-width: 1200px) {
+  .grid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: var(--space-sm);
+  }
+}
+
+.fullViewToggle {
+  display: flex;
+  justify-content: center;
+}
+
+.fullViewSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  max-width: 480px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.fullViewTitle {
+  margin: var(--space-sm) 0 0;
+  text-align: center;
+}
+
+.fullViewLede {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-soft);
+  text-align: center;
+}

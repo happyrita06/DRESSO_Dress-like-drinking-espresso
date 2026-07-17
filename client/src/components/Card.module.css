@@ -1,0 +1,83 @@
+.card {
+  /* Dynamic shadow: reuses the same global --px/--py the background
+     parallax reads (see useParallaxPointer), as if one light source
+     above the page casts every floating element's shadow — the card
+     shadow and the background depth shift move in the same coordinate
+     space, which is what sells "one cohesive layered composition"
+     rather than an animated backdrop behind an inert page. Defaults to
+     the original static --shadow-soft offsets when --px/--py are 0
+     (no JS, touch, or reduced-motion). */
+  --shadow-shift-x: calc(var(--px, 0) * 10px);
+  --shadow-shift-y: calc(12px + var(--py, 0) * 10px);
+
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-shift-x) var(--shadow-shift-y) 32px rgba(255, 116, 184, 0.18);
+  transform: rotate(var(--tilt, 0deg));
+  transition: transform var(--transition-base), box-shadow 0.4s ease-out, border-color var(--transition-fast);
+}
+
+.card:hover {
+  /* keep whatever resting tilt the card already has — only lift + pop,
+     never rotate further, so it doesn't read as crooked */
+  transform: rotate(var(--tilt, 0deg)) translateY(-6px) scale(1.02);
+  box-shadow: calc(4px + var(--shadow-shift-x) * 0.6) calc(4px + var(--shadow-shift-y) * 0.4) 0
+    rgba(74, 16, 48, 0.8);
+  border-color: var(--color-border-strong);
+}
+
+/* washi-tape corner, like a photo taped onto a diary page */
+.card::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 22px;
+  width: 52px;
+  height: 20px;
+  background: var(--tape-color, var(--pastel-pink));
+  border-radius: 3px;
+  transform: rotate(-4deg);
+  box-shadow: var(--shadow-sm);
+  opacity: 0.9;
+}
+
+.tilt-none {
+  --tilt: 0deg;
+}
+
+.tilt-left {
+  --tilt: -1.5deg;
+}
+
+.tilt-right {
+  --tilt: 1.5deg;
+}
+
+.accent-pink {
+  --tape-color: var(--pastel-pink);
+}
+
+.accent-mint {
+  --tape-color: var(--pastel-mint);
+}
+
+.accent-lavender {
+  --tape-color: var(--pastel-lavender);
+}
+
+.accent-sky {
+  --tape-color: var(--pastel-sky);
+}
+
+.accent-yellow {
+  --tape-color: var(--pastel-yellow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}

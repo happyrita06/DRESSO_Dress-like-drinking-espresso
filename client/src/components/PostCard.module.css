@@ -1,0 +1,268 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-soft);
+}
+
+.author {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  color: var(--color-secondary);
+  cursor: pointer;
+}
+
+.author:hover {
+  text-decoration: underline;
+}
+
+.imageWrap {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface-alt);
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.description {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-ink);
+  line-height: 1.5;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+}
+
+.weatherTag {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-secondary);
+  background: var(--pastel-sky);
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-pill);
+}
+
+.styleTag {
+  font-size: var(--font-size-xs);
+  color: var(--color-ink-soft);
+  background: var(--color-surface-alt);
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-pill);
+}
+
+.ownerActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.editButton,
+.deleteButton,
+.deleteConfirmButton,
+.cancelButton,
+.saveButton {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--font-size-xs);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 0.35rem 0.8rem;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.editButton,
+.saveButton {
+  color: #fff;
+  background: var(--color-secondary);
+}
+
+.deleteButton,
+.deleteConfirmButton {
+  color: var(--color-danger);
+  background: rgba(255, 69, 96, 0.1);
+}
+
+.cancelButton {
+  color: var(--color-ink-soft);
+  background: var(--color-surface-alt);
+}
+
+.editButton:hover,
+.deleteButton:hover,
+.deleteConfirmButton:hover,
+.cancelButton:hover,
+.saveButton:hover {
+  opacity: 0.8;
+}
+
+.editButton:disabled,
+.deleteButton:disabled,
+.deleteConfirmButton:disabled,
+.cancelButton:disabled,
+.saveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.confirmText {
+  font-size: var(--font-size-xs);
+  color: var(--color-ink-soft);
+}
+
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.editTextarea {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 0.8rem;
+  resize: vertical;
+}
+
+.editTextarea:focus-visible,
+.editWeatherInput:focus-visible {
+  outline: none;
+  border-color: var(--vivid-violet);
+}
+
+.editWeatherInput {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.7rem;
+}
+
+.editActions {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-danger);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-sm);
+  padding-top: var(--space-xs);
+  border-top: 1px dashed var(--color-border-strong);
+}
+
+.actionButton {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--font-size-xs);
+  color: var(--color-ink-soft);
+  background: var(--color-surface-alt);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.actionButton:hover {
+  color: var(--color-ink);
+}
+
+.liked {
+  background: var(--pastel-pink);
+  color: var(--color-primary-dark);
+}
+
+.commentsBox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding-top: var(--space-xs);
+  border-top: 1px dashed var(--color-border-strong);
+}
+
+.commentStatus {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-ink-faint);
+}
+
+.comment {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-ink);
+}
+
+.comment strong {
+  color: var(--color-secondary);
+  margin-right: 0.3rem;
+}
+
+.commentForm {
+  display: flex;
+  gap: var(--space-xs);
+  margin-top: var(--space-2xs);
+}
+
+.commentInput {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.7rem;
+}
+
+.commentInput:focus-visible {
+  outline: none;
+  border-color: var(--vivid-violet);
+}
+
+.commentSubmit {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--font-size-xs);
+  color: #fff;
+  background: var(--color-secondary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+}
+
+.commentSubmit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

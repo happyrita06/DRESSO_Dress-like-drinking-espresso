@@ -1,0 +1,145 @@
+.page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-md) var(--space-3xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: var(--font-size-xs);
+  color: var(--color-secondary);
+}
+
+.title {
+  margin: 0;
+}
+
+.lede {
+  margin: 0;
+  color: var(--color-ink-soft);
+  max-width: 56ch;
+}
+
+.setupSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.setupGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+.setupCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: var(--font-size-md);
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-soft);
+  background: var(--color-surface-alt);
+  border: 1.5px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  width: fit-content;
+}
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.resultsTitle {
+  margin: 0;
+}
+
+.resultsMeta {
+  margin: calc(var(--space-md) * -1) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-soft);
+}
+
+/* Always a single horizontal row (never wraps to a new line) — scrolls
+   sideways on narrow viewports instead of stacking cards vertically.
+   `overflow-x: auto` with no matching overflow-y forces the computed
+   overflow-y to `auto` too (a CSS coupling rule — you can't have
+   scroll-x-only with a truly visible y-axis), so the Card component's
+   washi-tape tab (position:absolute, top:-10px) and hover-lift transform
+   started getting clipped, and could trigger a second, unwanted vertical
+   scrollbar. Generous top/side padding keeps both decorations fully
+   inside the (still technically overflow:auto) box instead of relying on
+   them spilling outside it. */
+.itemGrid {
+  display: flex;
+  gap: var(--space-md);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: var(--space-md) var(--space-2xs) var(--space-sm);
+  scroll-snap-type: x proximity;
+}
+
+/* flex-basis shrunk from the old 220px (sized to fit a square photo) down
+   to fit just the two text lines, now that no photo renders in this slot. */
+.itemCard {
+  flex: 0 0 180px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  scroll-snap-align: start;
+}
+
+/* Replaces the old per-category <h3> heading now that cards from every
+   category sit in one flat row instead of their own stacked section. */
+.itemCategory {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+}
+
+.itemName {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--font-size-base);
+  color: var(--color-ink);
+}
+
+.itemDesc {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-soft);
+}
+
+@media (min-width: 768px) {
+  .setupGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
