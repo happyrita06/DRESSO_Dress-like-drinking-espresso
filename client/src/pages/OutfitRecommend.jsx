@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import Card from '../components/Card'
 import LocationSelector from '../components/LocationSelector'
@@ -55,6 +55,33 @@ function OutfitRecommend() {
   const introRef = useRef(null)
   const setupRef = useRef(null)
   const resultsRef = useRef(null)
+
+  // checkedIds persists (the checkbox stays filled); bubbleId is transient —
+  // only the item just checked shows the "좋은 선택이에요!" bubble, and it
+  // auto-clears itself a couple seconds later so it doesn't just pile up.
+  const [checkedIds, setCheckedIds] = useState(() => new Set())
+  const [bubbleId, setBubbleId] = useState(null)
+  const bubbleTimeoutRef = useRef(null)
+
+  useEffect(() => () => clearTimeout(bubbleTimeoutRef.current), [])
+
+  const handleToggleCheck = (id) => {
+    const willCheck = !checkedIds.has(id)
+    setCheckedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+
+    clearTimeout(bubbleTimeoutRef.current)
+    if (willCheck) {
+      setBubbleId(id)
+      bubbleTimeoutRef.current = setTimeout(() => setBubbleId(null), 2300)
+    } else {
+      setBubbleId((current) => (current === id ? null : current))
+    }
+  }
 
   useEffect(() => {
     if (prefersReducedMotion()) return undefined
@@ -165,13 +192,30 @@ function OutfitRecommend() {
               to group them under. */}
           <div className={styles.itemGrid}>
             {CATEGORY_META.flatMap(({ key, label, accent }) =>
-              result.items[key].map((item) => (
-                <Card key={item.id} accent={accent} className={styles.itemCard}>
-                  <span className={styles.itemCategory}>{label}</span>
-                  <p className={styles.itemName}>{item.name}</p>
-                  <p className={styles.itemDesc}>{item.description}</p>
-                </Card>
-              ))
+              result.items[key].map((item) => {
+                const isChecked = checkedIds.has(item.id)
+                return (
+                  <Card key={item.id} accent={accent} className={styles.itemCard}>
+                    <button
+                      type="button"
+                      className={`${styles.checkButton} ${isChecked ? styles.checkButtonActive : ''}`}
+                      onClick={() => handleToggleCheck(item.id)}
+                      aria-pressed={isChecked}
+                      aria-label={isChecked ? `${item.name} 체크 해제` : `${item.name} 체크하기`}
+                    >
+                      ✓
+                    </button>
+                    {bubbleId === item.id && (
+                      <span className={styles.pixelBubble} role="status">
+                        좋은 선택이에요!
+                      </span>
+                    )}
+                    <span className={styles.itemCategory}>{label}</span>
+                    <p className={styles.itemName}>{item.name}</p>
+                    <p className={styles.itemDesc}>{item.description}</p>
+                  </Card>
+                )
+              })
             )}
           </div>
         </section>

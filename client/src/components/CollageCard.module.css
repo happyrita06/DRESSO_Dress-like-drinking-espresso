@@ -1,10 +1,17 @@
+/* Lighter glass touch than Card.module.css's full treatment — these are
+   small polaroid-style tiles where the .photo underneath needs to stay
+   crisp, so only the paper "mat" around it goes translucent, not a heavy
+   blur that would fight the torn-paper photo edge. */
 .card {
   --rotation: 0deg;
   display: flex;
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.42);
+  backdrop-filter: blur(12px) saturate(1.5);
+  -webkit-backdrop-filter: blur(12px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.45);
   padding: 10px 10px 14px;
   border-radius: 3px;
   box-shadow: var(--shadow-soft);

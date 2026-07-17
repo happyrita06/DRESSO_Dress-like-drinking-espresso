@@ -15,23 +15,26 @@
 /* True glassmorphism: translucent panel + heavy backdrop blur so the busy
    animated background (gradient mesh, floating particles, Dither grain)
    actually shows through as soft frosted color instead of being blocked by
-   a near-opaque panel — a much stronger blur radius than before (24px vs
-   the old 8px) is what keeps that see-through backdrop legible-behind
-   rather than a distracting sharp jumble; the light border + inset
-   highlight is the other half of the "glass" read (a bright top edge
-   catching light). Every popup in the app routes through this one
-   Modal.jsx <Card>-equivalent, so this single rule covers all of them. */
+   a near-opaque panel. Pushed even more transparent a second pass (fill
+   alpha 0.55/0.4 -> 0.3/0.2) plus a stronger blur (24px -> 34px) and more
+   saturation lift (1.6 -> 1.85) so the backdrop reads as vivid color
+   through frosted glass instead of washing out gray at higher
+   transparency; the brighter border + inset highlight is the other half
+   of the "glass" read (a bright top edge catching light), boosted to stay
+   visible now that the fill itself is fainter. Every popup in the app
+   routes through this one Modal.jsx <Card>-equivalent, so this single
+   rule covers all of them. */
 .content {
   width: 100%;
   max-width: 480px;
   max-height: 90vh;
   overflow-y: auto;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.55), rgba(255, 234, 245, 0.4));
-  backdrop-filter: blur(24px) saturate(1.6);
-  -webkit-backdrop-filter: blur(24px) saturate(1.6);
-  border: 1px solid rgba(255, 255, 255, 0.65);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.18), rgba(255, 234, 245, 0.1));
+  backdrop-filter: blur(40px) saturate(2);
+  -webkit-backdrop-filter: blur(40px) saturate(2);
+  border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.9);
   padding: var(--space-lg);
   animation: contentIn 0.3s var(--ease-bounce);
 }

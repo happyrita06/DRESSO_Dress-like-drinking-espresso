@@ -21,11 +21,14 @@
   font-family: var(--font-body);
   font-size: var(--font-size-base);
   color: var(--color-ink);
-  background: var(--color-surface);
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(14px) saturate(1.6);
+  -webkit-backdrop-filter: blur(14px) saturate(1.6);
   border: 2px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: 0.7rem 0.9rem;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
+    background-color var(--transition-fast);
 }
 
 .input::placeholder {

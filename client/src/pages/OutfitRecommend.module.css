@@ -138,6 +138,110 @@
   color: var(--color-ink-soft);
 }
 
+/* Sharp corners + a thick flat border (no soft shadow/gradient) instead of
+   the app's usual rounded pill buttons — reads as a blocky pixel-UI toggle
+   rather than a native checkbox. Positioned relative to Card's own root
+   div (already `position: relative`), not a wrapper added just for this. */
+.checkButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 2px solid var(--color-ink);
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: transparent;
+  font-family: inherit;
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--shadow-pop-sm);
+  transition: transform var(--transition-fast), background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.checkButton:hover {
+  transform: scale(1.1);
+}
+
+.checkButtonActive {
+  background: var(--vivid-mint);
+  color: var(--color-surface);
+}
+
+/* Pixel-dot speech bubble: the dotted radial-gradient fill is the same
+   CSS-texture technique TodayMoodboard's fabric swatches use (no image
+   asset), sharp 0-radius corners + a diamond nub instead of a smooth
+   rounded tooltip is what reads as "pixel" rather than a generic
+   Material-style tooltip. Anchored inside the card's own box (not
+   floating above it) because .itemGrid clips vertical overflow — popping
+   up above the card's top edge would just get cut off. Font is left
+   unset on purpose so it inherits the app-wide default (Mona12, --font-
+   body) instead of introducing a different one. */
+.pixelBubble {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  z-index: 5;
+  width: 116px;
+  padding: 6px 7px;
+  background-color: var(--color-surface);
+  /* --vivid-pink (#ff74b8) at 0.2 alpha instead of the variable directly —
+     dots were fully opaque before, this is 0.2x that. */
+  background-image: radial-gradient(rgba(255, 116, 184, 0.2) 1.3px, transparent 1.7px);
+  background-size: 7px 7px;
+  border: 2px solid var(--color-ink);
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.62rem;
+  line-height: 1.3;
+  color: var(--color-ink);
+  text-align: center;
+  box-shadow: var(--shadow-pop-sm);
+  animation: bubblePop 0.25s var(--ease-bounce), bubbleFade 0.3s ease-in 2s forwards;
+}
+
+.pixelBubble::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 8px;
+  width: 9px;
+  height: 9px;
+  background-color: var(--color-surface);
+  border-top: 2px solid var(--color-ink);
+  border-right: 2px solid var(--color-ink);
+  transform: rotate(-45deg);
+}
+
+@keyframes bubblePop {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bubbleFade {
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pixelBubble {
+    animation: none;
+  }
+}
+
 @media (min-width: 768px) {
   .setupGrid {
     grid-template-columns: 1fr 1fr;

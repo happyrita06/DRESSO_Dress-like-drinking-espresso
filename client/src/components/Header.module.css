@@ -2,15 +2,19 @@
   position: sticky;
   top: 0;
   z-index: var(--z-nav);
-  /* More opaque than a typical glass panel on purpose: with the animated
-     gradient-mesh/particle layers now moving behind it, a lighter tint let
-     too much of that busy color bleed through and the nav text read as
-     hazy. This keeps a frosted edge (blur) without losing legibility. */
-  background: rgba(255, 249, 252, 0.94);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  /* Floating translucent nav: was 0.94 opaque (deliberately, to keep nav
+     text legible over the busy animated background layers) — pushed back
+     down to a genuinely translucent glass panel now, compensated by a
+     much heavier blur (8px -> 26px) and a saturation lift, which is what
+     keeps text legible at higher transparency: a light blur just softens
+     the backdrop, a heavy one homogenizes it into a soft color wash with
+     no sharp shapes left to compete with the nav text. */
+  background: rgba(255, 249, 252, 0.38);
+  backdrop-filter: blur(32px) saturate(1.9);
+  -webkit-backdrop-filter: blur(32px) saturate(1.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.55);
   box-shadow: 0 0 0 rgba(74, 16, 48, 0);
-  transition: box-shadow var(--transition-base);
+  transition: box-shadow var(--transition-base), background-color var(--transition-base);
 }
 
 /* sparkle-strip edge along the bottom of the nav bar */

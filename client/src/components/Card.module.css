@@ -11,11 +11,25 @@
   --shadow-shift-y: calc(12px + var(--py, 0) * 10px);
 
   position: relative;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  /* Frosted-acrylic glass: translucent tinted gradient + heavy backdrop
+     blur so the animated background layers (GradientMesh glow, Dither
+     grain, pixel sky) actually read through as soft color instead of
+     being hidden behind a flat surface — same formula family as Modal's
+     glass popups, tuned a little more opaque since these cards are
+     permanent page content (need to stay legible at a glance) rather
+     than a transient overlay. The pixel/washi-tape decorations below are
+     left as solid color on purpose — they're meant to look like actual
+     paper/tape objects stuck ON TOP of the glass, not part of the glass
+     itself, which is what keeps this a "glass card in a pixel scrapbook"
+     rather than an aesthetic clash. */
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.32), rgba(255, 234, 245, 0.2));
+  backdrop-filter: blur(26px) saturate(1.8);
+  -webkit-backdrop-filter: blur(26px) saturate(1.8);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
-  box-shadow: var(--shadow-shift-x) var(--shadow-shift-y) 32px rgba(255, 116, 184, 0.18);
+  box-shadow: var(--shadow-shift-x) var(--shadow-shift-y) 32px rgba(255, 116, 184, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
   transform: rotate(var(--tilt, 0deg));
   transition: transform var(--transition-base), box-shadow 0.4s ease-out, border-color var(--transition-fast);
 }
@@ -29,7 +43,35 @@
   border-color: var(--color-border-strong);
 }
 
-/* washi-tape corner, like a photo taped onto a diary page */
+/* Mouse-responsive light sheen — a soft highlight that drifts across the
+   glass following the cursor, reusing the same --px/--py (-1..1, whole
+   viewport) useParallaxPointer already writes for the background parallax
+   and the shadow above, instead of adding a second pointer listener. A
+   background-image respects the element's own border-radius automatically
+   (no need for `overflow: hidden` on .card, which would otherwise clip the
+   washi-tape corner below — that clipping bug already bit this component
+   once). Blended with `overlay` and kept fairly low-opacity on purpose: an
+   earlier, stronger version of this exact effect (a diagonal hover sweep)
+   was the actual root cause of "blurry popup" complaints reported earlier
+   in this project — soft + subtle is what keeps it a glass highlight
+   instead of reading as a smudge. */
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at calc(50% + var(--px, 0) * 40%) calc(30% + var(--py, 0) * 40%),
+    rgba(255, 255, 255, 0.5),
+    transparent 55%
+  );
+  mix-blend-mode: overlay;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* washi-tape corner, like a photo taped onto a diary page — solid color
+   (not glass), sitting visually on top of the glass surface below it. */
 .card::before {
   content: '';
   position: absolute;
@@ -42,6 +84,7 @@
   transform: rotate(-4deg);
   box-shadow: var(--shadow-sm);
   opacity: 0.9;
+  z-index: 1;
 }
 
 .tilt-none {
