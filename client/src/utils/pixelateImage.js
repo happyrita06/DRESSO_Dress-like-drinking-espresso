@@ -387,9 +387,24 @@ function cropBlobWithPadding(data, w, h, visited, blob, { padLeft = true, padRig
  * left untouched. See detectShoeBlobs' own comment for why this only runs
  * on the inner (seam-facing) edge of each shoe crop.
  */
+// How far (as a fraction of the crop's own width) a row's nearest-to-edge
+// opaque pixel may be extended out to the seam. Extending unconditionally
+// (any distance) closed the light-gap bug for a plain matte boot, but a
+// glossy/patent boot with a bright highlight or lace-loop pixel near its
+// inner edge produced an obviously wrong smeared/gradient streak once that
+// one pixel's color got stretched across a wide gap ("발과 발 사이에
+// 이상하게 늘어졌어" — a striped gray artifact between the feet, reported
+// with a screenshot of exactly that). A row whose real content stops this
+// far from the edge is more likely a genuine part of the boot's shape (the
+// ankle collar curving away) than a segmentation gap worth papering over —
+// better to leave a small transparent sliver there than smear a highlight
+// pixel across a large area.
+const MAX_INNER_EDGE_EXTEND_FRACTION = 0.08
+
 function extendRowsToInnerEdge(canvas, side) {
   const w = canvas.width
   const h = canvas.height
+  const maxGap = MAX_INNER_EDGE_EXTEND_FRACTION * w
   const ctx = canvas.getContext('2d')
   const imageData = ctx.getImageData(0, 0, w, h)
   const { data } = imageData
@@ -398,7 +413,7 @@ function extendRowsToInnerEdge(canvas, side) {
     if (side === 'right') {
       let x = w - 1
       while (x >= 0 && data[rowOffset + x * 4 + 3] === 0) x--
-      if (x < 0 || x === w - 1) continue
+      if (x < 0 || x === w - 1 || w - 1 - x > maxGap) continue
       const srcOffset = rowOffset + x * 4
       const [r, g, b, a] = [data[srcOffset], data[srcOffset + 1], data[srcOffset + 2], data[srcOffset + 3]]
       for (let fx = x + 1; fx < w; fx++) {
@@ -411,7 +426,7 @@ function extendRowsToInnerEdge(canvas, side) {
     } else {
       let x = 0
       while (x < w && data[rowOffset + x * 4 + 3] === 0) x++
-      if (x >= w || x === 0) continue
+      if (x >= w || x === 0 || x > maxGap) continue
       const srcOffset = rowOffset + x * 4
       const [r, g, b, a] = [data[srcOffset], data[srcOffset + 1], data[srcOffset + 2], data[srcOffset + 3]]
       for (let fx = 0; fx < x; fx++) {
