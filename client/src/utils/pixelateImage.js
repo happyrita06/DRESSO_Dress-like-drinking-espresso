@@ -169,69 +169,198 @@ const SEGMENTATION_MAX_DIM = 640
  */
 export function pixelateImage(
   imageSource,
-  {
-    pixelWidth = 28,
-    pixelHeight,
-    colorLevels = 28,
-    outputWidth = 256,
-    outputHeight,
-    extractForeground = false,
-    category,
-  } = {}
+  { extractForeground = false, category, ...pixelateOptions } = {}
 ) {
   return loadImageElement(imageSource).then((img) => {
     const source = extractForeground ? extractGarmentForeground(img, category) ?? img : img
-    const srcW = source.naturalWidth || source.width
-    const srcH = source.naturalHeight || source.height
-    const aspect = srcH / srcW || 1
-
-    const smallW = Math.max(1, Math.round(pixelWidth))
-    const smallH = Math.max(1, Math.round(pixelHeight ?? pixelWidth * aspect))
-
-    // Step 1: downscale the (possibly isolated) source into the tiny
-    // intermediate canvas.
-    const smallCanvas = document.createElement('canvas')
-    smallCanvas.width = smallW
-    smallCanvas.height = smallH
-    const smallCtx = smallCanvas.getContext('2d')
-    smallCtx.imageSmoothingEnabled = true
-    smallCtx.drawImage(source, 0, 0, smallW, smallH)
-
-    // Step 2: quantize every channel to `colorLevels` evenly spaced steps.
-    const levels = Math.max(2, Math.round(colorLevels))
-    const step = 256 / levels
-    const imageData = smallCtx.getImageData(0, 0, smallW, smallH)
-    const { data } = imageData
-    for (let i = 0; i < data.length; i += 4) {
-      data[i] = quantizeChannel(data[i], step)
-      data[i + 1] = quantizeChannel(data[i + 1], step)
-      data[i + 2] = quantizeChannel(data[i + 2], step)
-      // alpha (data[i + 3]) left untouched so transparency is preserved
-    }
-    smallCtx.putImageData(imageData, 0, 0)
-
-    // Step 3: upscale to the display size with nearest-neighbour (no blur).
-    const outW = Math.max(1, Math.round(outputWidth))
-    const outH = Math.max(1, Math.round(outputHeight ?? outputWidth * (smallH / smallW)))
-    const outCanvas = document.createElement('canvas')
-    outCanvas.width = outW
-    outCanvas.height = outH
-    const outCtx = outCanvas.getContext('2d')
-    outCtx.imageSmoothingEnabled = false
-    outCtx.drawImage(smallCanvas, 0, 0, smallW, smallH, 0, 0, outW, outH)
-
-    return outCanvas.toDataURL('image/png')
+    return pixelateSource(source, pixelateOptions)
   })
 }
 
 /**
- * "구조 인식" step: isolates the garment from a plain-ish photo background
- * via border-flood-fill segmentation, and returns a tightly-cropped,
- * background-transparent canvas — or `null` if the background couldn't be
+ * Steps 1-3 of the pipeline (downscale-average / quantize / nearest-neighbour
+ * upscale) factored out of `pixelateImage` so `pixelateShoePair` can run them
+ * directly on an already-segmented blob canvas (see below) without re-running
+ * foreground extraction on a crop that's already isolated.
+ */
+function pixelateSource(source, { pixelWidth = 28, pixelHeight, colorLevels = 28, outputWidth = 256, outputHeight } = {}) {
+  const srcW = source.naturalWidth || source.width
+  const srcH = source.naturalHeight || source.height
+  const aspect = srcH / srcW || 1
+
+  const smallW = Math.max(1, Math.round(pixelWidth))
+  const smallH = Math.max(1, Math.round(pixelHeight ?? pixelWidth * aspect))
+
+  // Step 1: downscale the (possibly isolated) source into the tiny
+  // intermediate canvas.
+  const smallCanvas = document.createElement('canvas')
+  smallCanvas.width = smallW
+  smallCanvas.height = smallH
+  const smallCtx = smallCanvas.getContext('2d')
+  smallCtx.imageSmoothingEnabled = true
+  smallCtx.drawImage(source, 0, 0, smallW, smallH)
+
+  // Step 2: quantize every channel to `colorLevels` evenly spaced steps.
+  const levels = Math.max(2, Math.round(colorLevels))
+  const step = 256 / levels
+  const imageData = smallCtx.getImageData(0, 0, smallW, smallH)
+  const { data } = imageData
+  for (let i = 0; i < data.length; i += 4) {
+    data[i] = quantizeChannel(data[i], step)
+    data[i + 1] = quantizeChannel(data[i + 1], step)
+    data[i + 2] = quantizeChannel(data[i + 2], step)
+    // alpha (data[i + 3]) left untouched so transparency is preserved
+  }
+  smallCtx.putImageData(imageData, 0, 0)
+
+  // Step 3: upscale to the display size with nearest-neighbour (no blur).
+  const outW = Math.max(1, Math.round(outputWidth))
+  const outH = Math.max(1, Math.round(outputHeight ?? outputWidth * (smallH / smallW)))
+  const outCanvas = document.createElement('canvas')
+  outCanvas.width = outW
+  outCanvas.height = outH
+  const outCtx = outCanvas.getContext('2d')
+  outCtx.imageSmoothingEnabled = false
+  outCtx.drawImage(smallCanvas, 0, 0, smallW, smallH, 0, 0, outW, outH)
+
+  return outCanvas.toDataURL('image/png')
+}
+
+// Two shoes photographed side by side have real background visible between
+// them (see extractGarmentForeground's own "구조 인식" comment on why that gap
+// is deliberately left as a clean cutout, not filled) — that gap used to get
+// stretched into the middle of the single shoes box, landing right where the
+// doll's two legs are and showing the body illustration through the gap
+// ("신발끼리 떨어져있으면 몸 일러스트가 보이는 듯"). `pixelateShoePair`
+// detects the two separate shoe blobs, crops each on its own, and pixelates
+// them independently so each half of the (now split, see shoesLeft/
+// shoesRight in dollLayout.js) shoes box only ever draws its own shoe, no
+// source-photo gap pixels involved. Only a MIN_SHOE_BLOB_AREA_FRACTION-sized
+// pair of blobs with non-overlapping x-ranges counts as "confidently two
+// shoes" — anything else (one blob, 3+, overlapping/touching shoes) returns
+// `null` so the caller can fall back to the legacy single-stretch behavior
+// (still available via `pixelateImage`) rather than risk a bad crop.
+const MIN_SHOE_BLOB_AREA_FRACTION = 0.01
+const SHOE_BLOB_PADDING_FRACTION = 0.04
+
+export function pixelateShoePair(imageSource, { category, ...pixelateOptions } = {}) {
+  return loadImageElement(imageSource).then((img) => {
+    const blobs = detectShoeBlobs(img, category)
+    if (!blobs) return null
+    const [leftCanvas, rightCanvas] = blobs
+    return {
+      left: pixelateSource(leftCanvas, pixelateOptions),
+      right: pixelateSource(rightCanvas, pixelateOptions),
+    }
+  })
+}
+
+/**
+ * Runs the same border-flood-fill segmentation as `extractGarmentForeground`,
+ * then connected-component-labels the remaining foreground pixels (4-
+ * connectivity) to find distinct blobs. Returns `[leftCanvas, rightCanvas]`
+ * (each background-transparent, tightly cropped with a little padding) when
+ * exactly two significant, non-overlapping (by x-range) blobs are found —
+ * "photo-left" and "photo-right" map straight onto the screen-left/right
+ * halves of the (split) shoes box, the same left-to-right orientation a
+ * single stretched photo already used. Returns `null` otherwise.
+ */
+function detectShoeBlobs(img, category) {
+  const seg = segmentForeground(img, category)
+  if (!seg) return null
+  const { data, w, h, visited } = seg
+
+  const labels = new Int32Array(w * h).fill(-1)
+  const blobs = []
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const idx = y * w + x
+      if (visited[idx] || labels[idx] !== -1) continue
+      const stack = [idx]
+      labels[idx] = blobs.length
+      let minX = x
+      let maxX = x
+      let minY = y
+      let maxY = y
+      let area = 0
+      while (stack.length) {
+        const cur = stack.pop()
+        const cx = cur % w
+        const cy = (cur - cx) / w
+        area++
+        if (cx < minX) minX = cx
+        if (cx > maxX) maxX = cx
+        if (cy < minY) minY = cy
+        if (cy > maxY) maxY = cy
+        if (cx > 0) tryPush(cur - 1)
+        if (cx < w - 1) tryPush(cur + 1)
+        if (cy > 0) tryPush(cur - w)
+        if (cy < h - 1) tryPush(cur + w)
+      }
+      blobs.push({ minX, maxX, minY, maxY, area })
+
+      function tryPush(n) {
+        if (visited[n] || labels[n] !== -1) return
+        labels[n] = blobs.length
+        stack.push(n)
+      }
+    }
+  }
+
+  const minArea = MIN_SHOE_BLOB_AREA_FRACTION * w * h
+  const significant = blobs.filter((b) => b.area >= minArea)
+  if (significant.length !== 2) return null // not confidently two separate shoes
+
+  significant.sort((a, b) => a.minX + a.maxX - (b.minX + b.maxX))
+  const [leftBlob, rightBlob] = significant
+  // overlapping x-ranges means they're not cleanly side-by-side (angled
+  // shot, touching shoes, etc.) — bail rather than crop something that would
+  // cut one shoe in half.
+  if (leftBlob.maxX > rightBlob.minX) return null
+
+  return [leftBlob, rightBlob].map((b) => cropBlobWithPadding(data, w, h, visited, b))
+}
+
+function cropBlobWithPadding(data, w, h, visited, blob) {
+  const padX = Math.round((blob.maxX - blob.minX + 1) * SHOE_BLOB_PADDING_FRACTION)
+  const padY = Math.round((blob.maxY - blob.minY + 1) * SHOE_BLOB_PADDING_FRACTION)
+  const minX = Math.max(0, blob.minX - padX)
+  const maxX = Math.min(w - 1, blob.maxX + padX)
+  const minY = Math.max(0, blob.minY - padY)
+  const maxY = Math.min(h - 1, blob.maxY + padY)
+  const cropW = maxX - minX + 1
+  const cropH = maxY - minY + 1
+
+  const canvas = document.createElement('canvas')
+  canvas.width = cropW
+  canvas.height = cropH
+  const ctx = canvas.getContext('2d')
+  const outData = ctx.createImageData(cropW, cropH)
+  for (let y = 0; y < cropH; y++) {
+    for (let x = 0; x < cropW; x++) {
+      const srcIdx = (y + minY) * w + (x + minX)
+      const srcOffset = srcIdx * 4
+      const dstOffset = (y * cropW + x) * 4
+      outData.data[dstOffset] = data[srcOffset]
+      outData.data[dstOffset + 1] = data[srcOffset + 1]
+      outData.data[dstOffset + 2] = data[srcOffset + 2]
+      outData.data[dstOffset + 3] = visited[srcIdx] ? 0 : 255
+    }
+  }
+  ctx.putImageData(outData, 0, 0)
+  return canvas
+}
+
+/**
+ * "구조 인식" step: the border-flood-fill background segmentation shared by
+ * `extractGarmentForeground` (single tight bbox crop) and `detectShoeBlobs`
+ * (connected-component split into two crops) above. Returns
+ * `{ data, w, h, visited }` — `visited[y*w+x]` truthy means that pixel was
+ * classified as background — or `null` if the background couldn't be
  * confidently identified (busy photo, garment fills the whole frame, etc.),
  * in which case the caller should fall back to the original image untouched.
  */
-function extractGarmentForeground(img, category) {
+function segmentForeground(img, category) {
   const naturalW = img.naturalWidth || img.width
   const naturalH = img.naturalHeight || img.height
   if (!naturalW || !naturalH) return null
@@ -311,6 +440,24 @@ function extractGarmentForeground(img, category) {
     return null // not confident there's a removable plain background
   }
 
+  return { data, w, h, visited }
+}
+
+/**
+ * Isolates the garment from a plain-ish photo background using
+ * `segmentForeground` above, and returns a tightly-cropped, background-
+ * transparent canvas around the single overall bounding box of whatever's
+ * left — or `null` (segmentation unconfident, or nothing left as
+ * foreground), in which case the caller should fall back to the original
+ * image untouched. For 'shoes' specifically, this treats a left+right shoe
+ * pair as one combined region (see `detectShoeBlobs` above for the
+ * alternative that crops each shoe on its own instead).
+ */
+function extractGarmentForeground(img, category) {
+  const seg = segmentForeground(img, category)
+  if (!seg) return null
+  const { data, w, h, visited } = seg
+
   // tight bounding box of the remaining foreground
   let minX = w
   let minY = h
@@ -336,10 +483,10 @@ function extractGarmentForeground(img, category) {
   // distortion across the middle instead of two shoes ("신발 가운데에
   // 이상하게 회색으로 늘어나 있고 신발 사진이 일그러졌어. 가운데 누끼 좀
   // 제대로 따줘" — explicitly asking for that gap to stay a clean cutout,
-  // not filled). So this category gets no special-casing: the flood fill's
-  // own background/foreground call stands as-is, same as every other
-  // category.
-
+  // not filled). So this single-bbox path gets no special-casing: the flood
+  // fill's own background/foreground call stands as-is, same as every other
+  // category — `pixelateShoePair`/`detectShoeBlobs` above is what actually
+  // keeps that gap from landing on the doll, by cropping each shoe alone.
   const cropW = maxX - minX + 1
   const cropH = maxY - minY + 1
   // guards the failure mode where a same-ish-colored garment (a white top

@@ -1,5 +1,5 @@
 import { useId, useRef, useState } from 'react'
-import { pixelateImage } from '../utils/pixelateImage'
+import { pixelateImage, pixelateShoePair } from '../utils/pixelateImage'
 import styles from './UploadSlot.module.css'
 
 const MIN_LOADING_MS = 800
@@ -22,6 +22,7 @@ function UploadSlot({
   notePlaceholder,
   hasNeckline,
   onNecklineChange,
+  hint,
 }) {
   const inputId = useId()
   const inputRef = useRef(null)
@@ -57,11 +58,22 @@ function UploadSlot({
 
     const delay = MIN_LOADING_MS + Math.random() * (MAX_LOADING_MS - MIN_LOADING_MS)
 
-    Promise.all([pixelateImage(file, pixelateOptions), waitFor(delay)])
-      .then(([dataUrl]) => {
-        setResultUrl(dataUrl)
+    // 'shoes' gets a two-shoe detection pass first (see pixelateShoePair's
+    // own comment in pixelateImage.js — splits the photo into its own left/
+    // right shoe crops so the gap between them doesn't land on the doll's
+    // leg gap). Falls back to the legacy single-stretch pixelateImage when
+    // it can't confidently find two separate shoes (touching/overlapping
+    // shoes, a single shoe, etc.), so a shoes upload never just fails outright.
+    const run =
+      pixelateOptions?.category === 'shoes'
+        ? pixelateShoePair(file, pixelateOptions).then((pair) => pair ?? pixelateImage(file, pixelateOptions))
+        : pixelateImage(file, pixelateOptions)
+
+    Promise.all([run, waitFor(delay)])
+      .then(([result]) => {
+        setResultUrl(result)
         setStatus('done')
-        onPixelated?.(dataUrl)
+        onPixelated?.(result)
       })
       .catch(() => {
         setError('이미지를 변환하지 못했어요. 다시 시도해주세요.')
@@ -113,6 +125,7 @@ function UploadSlot({
       <label htmlFor={inputId} className={styles.label}>
         {label}
       </label>
+      {hint && <p className={styles.slotHint}>{hint}</p>}
       <div
         role="button"
         tabIndex={0}
@@ -158,7 +171,17 @@ function UploadSlot({
 
         {status === 'done' && resultUrl && (
           <>
-            <img src={resultUrl} alt={`${label} 픽셀아트 결과`} className={styles.resultImage} />
+            {typeof resultUrl === 'string' ? (
+              <img src={resultUrl} alt={`${label} 픽셀아트 결과`} className={styles.resultImage} />
+            ) : (
+              // pixelateShoePair result: two separately detected/pixelated
+              // shoes — shown side by side so it's clear both were
+              // recognized (see UploadSlot.module.css .resultImagePair).
+              <div className={styles.resultImagePair}>
+                <img src={resultUrl.left} alt={`${label} 픽셀아트 결과 (왼쪽)`} className={styles.resultImage} />
+                <img src={resultUrl.right} alt={`${label} 픽셀아트 결과 (오른쪽)`} className={styles.resultImage} />
+              </div>
+            )}
             <button
               type="button"
               className={styles.removeButton}

@@ -288,6 +288,23 @@ async function buildPositionedLayerUrl(src, gender, category, accessoryNote, has
   const ctx = canvas.getContext('2d')
   ctx.imageSmoothingEnabled = false
 
+  if (category === 'shoes' && src && typeof src === 'object') {
+    // pixelateShoePair detected two separate shoe blobs — draw each into its
+    // own half of the (split) shoes box instead of stretching one photo
+    // across the whole thing (see shoesLeft/shoesRight's own comment in
+    // dollLayout.js for why).
+    const [leftImg, rightImg] = await Promise.all([loadImage(src.left), loadImage(src.right)])
+    for (const [img, posKey] of [[leftImg, 'shoesRight'], [rightImg, 'shoesLeft']]) {
+      const pos = LAYER_POSITIONS[gender][posKey]
+      const x = (parsePercent(pos.left) / 100) * canvas.width
+      const y = (parsePercent(pos.top) / 100) * canvas.height
+      const w = (parsePercent(pos.width) / 100) * canvas.width
+      const h = (parsePercent(pos.height) / 100) * canvas.height
+      drawFill(ctx, img, x, y, w, h)
+    }
+    return canvas.toDataURL('image/png')
+  }
+
   const img = await loadImage(src)
 
   if (category === 'accessory') {
@@ -368,21 +385,27 @@ async function compositeToDataUrl({ layers, gender, expression, eyeColor, hairSt
     ctx.filter = 'none'
   }
 
-  const hairSrc = HAIR_IMAGES[gender]?.[hairStyle]
-  if (hairSrc) {
-    const hairImg = await loadImage(hairSrc)
-    const hairPos = getHairPosition(gender, hairStyle)
-    const hx = (parsePercent(hairPos.left) / 100) * canvas.width
-    const hy = (parsePercent(hairPos.top) / 100) * canvas.height
-    const hw = (parsePercent(hairPos.width) / 100) * canvas.width
-    const hh = (parsePercent(hairPos.height) / 100) * canvas.height
-    drawContain(ctx, hairImg, hx, hy, hw, hh)
-  }
-
   const genderLayerPositions = LAYER_POSITIONS[gender]
   for (const key of CATEGORY_ORDER) {
     const src = layers[key]
     if (!src) continue
+
+    if (key === 'shoes' && typeof src === 'object') {
+      // see buildPositionedLayerUrl's own comment — draw each detected shoe
+      // into its own half of the (split) shoes box instead of stretching
+      // one photo across the whole thing.
+      const [leftImg, rightImg] = await Promise.all([loadImage(src.left), loadImage(src.right)])
+      for (const [img, posKey] of [[leftImg, 'shoesRight'], [rightImg, 'shoesLeft']]) {
+        const pos = genderLayerPositions[posKey]
+        const x = (parsePercent(pos.left) / 100) * canvas.width
+        const y = (parsePercent(pos.top) / 100) * canvas.height
+        const w = (parsePercent(pos.width) / 100) * canvas.width
+        const h = (parsePercent(pos.height) / 100) * canvas.height
+        drawFill(ctx, img, x, y, w, h)
+      }
+      continue
+    }
+
     const img = await loadImage(src)
 
     if (key === 'accessory') {
@@ -424,6 +447,19 @@ async function compositeToDataUrl({ layers, gender, expression, eyeColor, hairSt
     layerCtx.drawImage(maskImg, 0, 0, canvas.width, canvas.height)
 
     ctx.drawImage(layerCanvas, 0, 0)
+  }
+
+  // drawn last (on top of all clothing) to match LAYER_Z_INDEX.hair being the
+  // highest z-index in the live preview — see dollLayout.js's own comment.
+  const hairSrc = HAIR_IMAGES[gender]?.[hairStyle]
+  if (hairSrc) {
+    const hairImg = await loadImage(hairSrc)
+    const hairPos = getHairPosition(gender, hairStyle)
+    const hx = (parsePercent(hairPos.left) / 100) * canvas.width
+    const hy = (parsePercent(hairPos.top) / 100) * canvas.height
+    const hw = (parsePercent(hairPos.width) / 100) * canvas.width
+    const hh = (parsePercent(hairPos.height) / 100) * canvas.height
+    drawContain(ctx, hairImg, hx, hy, hw, hh)
   }
 
   return canvas.toDataURL('image/png')

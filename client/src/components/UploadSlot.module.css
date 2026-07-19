@@ -11,6 +11,13 @@
   color: var(--color-ink);
 }
 
+.slotHint {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-ink-soft);
+}
+
 .noteInput {
   font-family: var(--font-body);
   font-size: var(--font-size-xs);
@@ -181,6 +188,19 @@
   object-fit: contain;
   image-rendering: pixelated;
   animation: pixelPopIn 0.35s var(--ease-bounce);
+}
+
+.resultImagePair {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3xs);
+  width: 100%;
+  height: 100%;
+}
+
+.resultImagePair .resultImage {
+  width: 50%;
 }
 
 .removeButton {

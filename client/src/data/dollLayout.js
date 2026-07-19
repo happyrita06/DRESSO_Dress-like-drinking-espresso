@@ -10,23 +10,28 @@
  * topmost, then top, then bottom, then shoes at the very bottom): shoes <
  * bottom < top < accessory. 'outer' wasn't named in that request — kept
  * directly under accessory (i.e. above top), matching its prior relative
- * position as outerwear layered over the top.
+ * position as outerwear layered over the top. Per a later follow-up request
+ * ("머리카락 레이어도 맨 위에 있도록 해줘"), hair was moved above accessory —
+ * see LAYER_Z_INDEX's own comment below for the resulting order.
  */
 export const CATEGORY_ORDER = ['shoes', 'bottom', 'top', 'outer', 'accessory']
 
 // z-index order (low -> high): base illustration (implicit 0) < face (head
-// overlay) < hair (wig, framing the face with a cutout hole so face still
-// shows through) < shoes < bottom < top < outer < accessory. See
-// CATEGORY_ORDER's own comment above for the follow-up request behind this
-// order.
+// overlay) < shoes < bottom < top < outer < accessory < hair (wig, framing
+// the face with a cutout hole so face still shows through). See
+// CATEGORY_ORDER's own comment above for the follow-up request behind the
+// shoes/bottom/top/outer/accessory order; hair was moved to the very top per
+// a later follow-up request ("머리카락 레이어도 맨 위에 있도록 해줘") — it was
+// previously just above face (below all clothing), which meant tall hair
+// (long/updos) hidden behind e.g. outer collars/hoods.
 export const LAYER_Z_INDEX = {
   face: 1,
-  hair: 2,
-  shoes: 3,
-  bottom: 4,
-  top: 5,
-  outer: 6,
-  accessory: 7,
+  shoes: 2,
+  bottom: 3,
+  top: 4,
+  outer: 5,
+  accessory: 6,
+  hair: 7,
 }
 
 // { top, left, width, height } as % of the doll stage's own box — gender-
@@ -135,8 +140,12 @@ export const LAYER_POSITIONS = {
     // line (36%->39.6%), both per explicit follow-up requests — deliberately
     // overflows the stage on all sides; the silhouette mask trims it back
     // to the real leg edges, so the overflow itself is harmless (see
-    // coverage rule).
-    bottom: { top: '52%', left: '-3.3%', width: '106.6%', height: '39.6%' },
+    // coverage rule). Then, per a later follow-up request ("하의 크기를
+    // 1.05배 크게 해줘"), scaled 1.05x overall: width scaled 1.05x around its
+    // own center (106.6%->111.93%, left recentred to -5.965%); height scaled
+    // 1.05x anchored at the same fixed 52% waist line as before (39.6%->
+    // 41.58%, top unchanged).
+    bottom: { top: '52%', left: '-5.965%', width: '111.93%', height: '41.58%' },
     // top edge measured directly off doll-f-mask.png's real pixel data
     // (decoded the PNG's raw alpha channel and scanned per-row opaque
     // width): the leg's narrowest row (the ankle) sits at y=86.94% of the
@@ -207,8 +216,83 @@ export const LAYER_POSITIONS = {
     // 57.615%, left recentred to 21.1925%); and top raised 5mm (3.75%,
     // 77.762%->74.012%) to extend coverage further up toward the shin,
     // with height re-derived from the sole-line pin per the rule above
-    // (101% - 74.012% = 26.988%).
-    shoes: { top: '74.012%', left: '21.1925%', width: '57.615%', height: '26.988%' },
+    // (101% - 74.012% = 26.988%). Then, per a later follow-up request
+    // ("신발 범위 전체 크기 0.9배로 줄여줘"), scaled 0.9x overall: width
+    // scaled 0.9x around its own center (57.615%->51.8535%, left recentred
+    // to 24.0733%); height scaled 0.9x with the sole-line pin held fixed per
+    // the COVERAGE RULE above (26.988%->24.2892%, top re-derived as
+    // 101% - 24.2892% = 76.7108%). Then, per a later follow-up request
+    // ("신발 범위 전체 기준 다시 1.03배만 더 키우고"), scaled 1.03x overall:
+    // width scaled 1.03x around its own center (51.8535%->53.4091%, left
+    // recentred to 23.2955%); height scaled 1.03x with the sole-line pin
+    // held fixed per the COVERAGE RULE above (24.2892%->25.0179%, top
+    // re-derived as 101% - 25.0179% = 75.9821%). Then, per a later
+    // follow-up request ("신발 전체를 1mm만 위로 올려줘"), moved up 1mm
+    // (top -0.75%, 75.9821%->75.2321%; left/width/height unchanged — this
+    // is a plain shift, not a scale, so it temporarily broke the sole-line
+    // pin from the COVERAGE RULE above by 0.75%). Then, per a later
+    // follow-up request ("신발 같은 경우, 항상 몸 일러스트 발 끝을 채우도록
+    // object-fill 적용해줘" — shoes must always fill/stretch all the way to
+    // the doll's actual foot tip), height re-derived per the COVERAGE RULE
+    // to restore the sole-line pin at the current (shifted-up) top:
+    // 101% - 75.2321% = 25.7679%. Then, per a later follow-up request
+    // ("신발이 다리를 다 덮을 크기로 설정되게끔 (매번) 설정해줘" — clarified
+    // as knee-to-toe coverage), top raised to an approximate knee line: no
+    // mask-measured knee row exists in this file (unlike the ankle/waist
+    // rows above, which are real pixel measurements off doll-f-mask.png),
+    // so it's approximated as the midpoint between the measured waist line
+    // (52%, LAYER_POSITIONS.f.bottom's own top) and the measured ankle row
+    // (87.5%, this box's pre-shin-extension top from the ankle/sole
+    // measurement comment above): (52% + 87.5%) / 2 = 69.75%. Width/left
+    // unchanged (vertical-coverage change only); height re-derived from the
+    // sole-line pin per the COVERAGE RULE above: 101% - 69.75% = 31.25%. If
+    // this visual approximation misses the doll's actual knee, replace
+    // 69.75% with a real mask-measured value. Then, per a later follow-up
+    // request ("신발 범위 각각 신발 한쪽씩 양옆으로 신발 가로 폭 2mm씩
+    // 늘리기(신발 두껍게)" — this box stretch-fills both boots as one image,
+    // so widening it widens both boots symmetrically, same net effect as
+    // widening each boot 2mm on its own outer/inner edge): widened 2mm
+    // (1.5%, 0.75%/mm) on each side — left -1.5% (23.2955%->21.7955%),
+    // width +3% (53.4091%->56.4091%); top/height unchanged. Then, per a
+    // later follow-up request ("더 두껍게 양옆으로 2mm씩"), widened a
+    // further 2mm on each side — left -1.5% (21.7955%->20.2955%), width
+    // +3% (56.4091%->59.4091%); top/height unchanged. Then, per a later
+    // follow-up request ("신발끼리 간격 3mm 안쪽으로 붙여" — this box
+    // stretch-fills both boots as one image, so narrowing it brings the two
+    // rendered boots closer together, same net effect as moving each boot
+    // 1.5mm inward): narrowed 3mm total (1.5mm off each side, 2.25%,
+    // 0.75%/mm) around the box's own center — width 59.4091%->57.1591%,
+    // left recentred to 21.42045%; top/height unchanged. Then, per a later
+    // follow-up request ("더 안쪽으로 2.5mm, 신발 크기 둘다 1.1배 키우기"):
+    // first narrowed a further 2.5mm total (1.25mm off each side, 1.875%,
+    // 0.75%/mm) around the box's own center (width 57.1591%->55.2841%, left
+    // recentred to 22.35795%); then the whole box scaled 1.1x around its own
+    // center — width 55.2841%->60.81251% (left recentred to 19.593745%),
+    // height 31.25%->34.375% (top recentred to 68.1875%).
+    shoes: { top: '68.1875%', left: '19.593745%', width: '60.81251%', height: '34.375%' },
+    // Per a later follow-up request ("신발 사진 인식 단계에서 두짝을 각각
+    // 인식하고 원래 지정한 범위대로 위치를 정해서 붙이도록"): when
+    // pixelateShoePair (pixelateImage.js) confidently detects two separate
+    // shoe blobs in the uploaded photo, each is pixelated on its own and
+    // drawn into its own half of the 'shoes' box above instead of one photo
+    // being stretched across the whole box — that stretch used to drag the
+    // real background gap between the two shoes into the middle of the box,
+    // right over the doll's leg gap, showing the body illustration through
+    // it ("신발끼리 떨어져있으면 몸 일러스트가 보이는 듯"). These two boxes
+    // are an exact half-split of 'shoes' above (same top/height, width
+    // halved, side by side) — same total footprint as before, so all the
+    // sizing/spacing tuning on 'shoes' still applies; splitting only changes
+    // which image source fills which half. Falls back to the single 'shoes'
+    // box (whole photo stretched across it) when detection isn't confident
+    // (touching/overlapping shoes, single shoe, etc. — see
+    // MIN_SHOE_BLOB_AREA_FRACTION in pixelateImage.js). Screen-left half =
+    // doll's own right foot ('shoesRight'), screen-right half = doll's own
+    // left foot ('shoesLeft'), per this file's usual doll-own-left/right
+    // naming convention (see wristLeft/wristRight above) — "photo-left"
+    // shoe lands in the screen-left half, same orientation a single
+    // stretched photo already used.
+    shoesRight: { top: '68.1875%', left: '19.593745%', width: '30.406255%', height: '34.375%' },
+    shoesLeft: { top: '68.1875%', left: '50%', width: '30.406255%', height: '34.375%' },
   },
   m: {
     // top edge = HEAD_POSITIONS.m's bottom edge (32.77%, neck-base) with
@@ -234,8 +318,13 @@ export const LAYER_POSITIONS = {
     top: { top: '30.533%', left: '2.96%', width: '94.08%', height: '33.31%' },
     // width scaled 1.3x around its own center (82%->106.6%, left -3.3%);
     // height scaled 1.1x anchored at the fixed 53% waist line
-    // (35%->38.5%) — see f's comment above.
-    bottom: { top: '53%', left: '-3.3%', width: '106.6%', height: '38.5%' },
+    // (35%->38.5%) — see f's comment above. Then, per the same later
+    // follow-up request as f's bottom above ("하의 크기를 1.05배 크게
+    // 해줘"), scaled 1.05x overall: width scaled 1.05x around its own center
+    // (106.6%->111.93%, left recentred to -5.965%); height scaled 1.05x
+    // anchored at the same fixed 53% waist line (38.5%->40.425%, top
+    // unchanged).
+    bottom: { top: '53%', left: '-5.965%', width: '111.93%', height: '40.425%' },
     // top edge measured off doll-m-mask.png's real pixel data: the leg's
     // narrowest row (ankle) sits at y=84.04% of the canvas (mask governs
     // what's actually clippable/visible, so it takes precedence over the
@@ -282,8 +371,60 @@ export const LAYER_POSITIONS = {
     // further 4mm per side (8mm/6% total) around the box's own center
     // (65.82%->59.82%, left recentred to 20.09%); and top raised 5mm
     // (3.75%, 76.937%->73.187%) with height re-derived from the sole-line
-    // pin (100.98% - 73.187% = 27.793%).
-    shoes: { top: '73.187%', left: '20.09%', width: '59.82%', height: '27.793%' },
+    // pin (100.98% - 73.187% = 27.793%). Then, per the same later
+    // follow-up request as f's shoes above ("신발 범위 전체 크기 0.9배로
+    // 줄여줘"), scaled 0.9x overall: width scaled 0.9x around its own
+    // center (59.82%->53.838%, left recentred to 23.081%); height scaled
+    // 0.9x with the sole-line pin held fixed per the COVERAGE RULE above
+    // (27.793%->25.0137%, top re-derived as 100.98% - 25.0137% = 75.9663%).
+    // Then, per the same later follow-up request as f's shoes above
+    // ("신발 범위 전체 기준 다시 1.03배만 더 키우고"), scaled 1.03x overall:
+    // width scaled 1.03x around its own center (53.838%->55.4531%, left
+    // recentred to 22.2734%); height scaled 1.03x with the sole-line pin
+    // held fixed per the COVERAGE RULE above (25.0137%->25.7641%, top
+    // re-derived as 100.98% - 25.7641% = 75.2159%). Then, per the same
+    // later follow-up request as f's shoes above ("신발 전체를 1mm만 위로
+    // 올려줘"), moved up 1mm (top -0.75%, 75.2159%->74.4659%; left/width/
+    // height unchanged — a plain shift, temporarily breaking the sole-line
+    // pin from the COVERAGE RULE above by 0.75%). Then, per the same later
+    // follow-up request as f's shoes above ("신발 같은 경우, 항상 몸
+    // 일러스트 발 끝을 채우도록 object-fill 적용해줘"), height re-derived
+    // per the COVERAGE RULE to restore the sole-line pin at the current
+    // (shifted-up) top: 100.98% - 74.4659% = 26.5141%. Then, per the same
+    // later follow-up request as f's shoes above ("신발이 다리를 다 덮을
+    // 크기로 설정되게끔 (매번) 설정해줘" — clarified as knee-to-toe
+    // coverage), top raised to an approximate knee line, same reasoning as
+    // f's shoes above (no mask-measured knee row exists): midpoint between
+    // the measured waist line (53%, LAYER_POSITIONS.m.bottom's own top) and
+    // the measured ankle row (84.98%, this box's own ankle/sole measurement
+    // comment above): (53% + 84.98%) / 2 = 68.99%. Width/left unchanged;
+    // height re-derived from the sole-line pin per the COVERAGE RULE above:
+    // 100.98% - 68.99% = 31.99%. If this visual approximation misses the
+    // doll's actual knee, replace 68.99% with a real mask-measured value.
+    // Then, per the same later follow-up request as f's shoes above ("신발
+    // 범위 각각 신발 한쪽씩 양옆으로 신발 가로 폭 2mm씩 늘리기(신발
+    // 두껍게)"): widened 2mm (1.5%, 0.75%/mm) on each side — left -1.5%
+    // (22.2734%->20.7734%), width +3% (55.4531%->58.4531%); top/height
+    // unchanged. Then, per the same later follow-up request as f's shoes
+    // above ("더 두껍게 양옆으로 2mm씩"), widened a further 2mm on each
+    // side — left -1.5% (20.7734%->19.2734%), width +3% (58.4531%->
+    // 61.4531%); top/height unchanged. Then, per the same later follow-up
+    // request as f's shoes above ("신발끼리 간격 3mm 안쪽으로 붙여"):
+    // narrowed 3mm total (1.5mm off each side, 2.25%, 0.75%/mm) around the
+    // box's own center — width 61.4531%->59.2031%, left recentred to
+    // 20.39845%; top/height unchanged. Then, per the same later follow-up
+    // request as f's shoes above ("더 안쪽으로 2.5mm, 신발 크기 둘다 1.1배
+    // 키우기"): first narrowed a further 2.5mm total (1.25mm off each side,
+    // 1.875%, 0.75%/mm) around the box's own center (width 59.2031%->
+    // 57.3281%, left recentred to 21.33595%); then the whole box scaled
+    // 1.1x around its own center — width 57.3281%->63.06091% (left
+    // recentred to 18.469545%), height 31.99%->35.189% (top recentred to
+    // 67.3905%).
+    shoes: { top: '67.3905%', left: '18.469545%', width: '63.06091%', height: '35.189%' },
+    // same later follow-up request and same exact half-split rationale as
+    // f's shoesLeft/shoesRight above.
+    shoesRight: { top: '67.3905%', left: '18.469545%', width: '31.530455%', height: '35.189%' },
+    shoesLeft: { top: '67.3905%', left: '50%', width: '31.530455%', height: '35.189%' },
   },
 }
 
@@ -362,8 +503,12 @@ export const ACCESSORY_ZONES = {
     // later follow-up request.
     neck: { top: '31.55%', left: '33.2%', width: '33.6%', height: '8.4%' },
     // scaled 0.6x around its own center (69.4%/10% -> 41.64%/6%, left/top
-    // recentred to 28.78%/52%) per an explicit follow-up request.
-    waist: { top: '52%', left: '28.78%', width: '41.64%', height: '6%' },
+    // recentred to 28.78%/52%) per an explicit follow-up request. Then
+    // scaled 1.1x around its own center (41.64%/6% -> 45.804%/6.6%, left/top
+    // recentred to 26.698%/51.7%) per a later follow-up request, then moved
+    // 1mm (0.75%) to the right (left 26.698%->27.448%; top/width/height
+    // unchanged) per the same request's second half.
+    waist: { top: '51.7%', left: '27.448%', width: '45.804%', height: '6.6%' },
     // Split the old single wide 'wrist' box (top:54%, left:1.5%, width:97%,
     // height:10% — spanning both arms in one band) into a left/right pair
     // per an explicit follow-up request to distinguish which wrist a
@@ -445,8 +590,12 @@ export const ACCESSORY_ZONES = {
     neck: { top: '32.55%', left: '33.2%', width: '33.6%', height: '8.4%' },
     // scaled 0.6x around its own center (69.4%/10% -> 41.64%/6%, left/top
     // recentred to 28.78%/53%) per the same follow-up request as f's waist
-    // above.
-    waist: { top: '53%', left: '28.78%', width: '41.64%', height: '6%' },
+    // above. Then scaled 1.1x around its own center (41.64%/6% ->
+    // 45.804%/6.6%, left/top recentred to 26.698%/52.7%) per the same later
+    // follow-up request as f's waist above, then moved 1mm (0.75%) to the
+    // right (left 26.698%->27.448%; top/width/height unchanged) per the
+    // same request's second half.
+    waist: { top: '52.7%', left: '27.448%', width: '45.804%', height: '6.6%' },
     // same split/rationale as f's wristLeft/wristRight above (same follow-up
     // request); m's tilt reuses f's measured -6/+6 rather than being
     // re-measured off doll-m-mask.png separately — the two base

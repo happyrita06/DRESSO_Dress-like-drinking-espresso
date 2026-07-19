@@ -27,10 +27,21 @@ import styles from './PixelDressUp.module.css'
 const EXAMPLE_PHOTOS = [
   { label: '상의 / 아우터', images: [exampleOuter1, exampleTopOuter2] },
   { label: '하의', images: [exampleBottom] },
-  { label: '신발', images: [exampleShoes] },
+  // note: spells out the two-shoe-detection requirement (see
+  // SHOES_UPLOAD_HINT above and pixelateShoePair in pixelateImage.js) right
+  // under the example photo, per an explicit follow-up request.
+  { label: '신발', images: [exampleShoes], note: '두 짝이 겹치거나 붙어있지 않고, 사이에 배경이 살짝 보이게 나온 사진이 가장 잘 인식돼요.' },
   { label: '팔찌 / 발찌', images: [exampleAccessoryBracelet] },
   { label: '목걸이', images: [exampleAccessoryNecklace] },
 ]
+
+// Per an explicit follow-up request ("신발 조건도 써놔줘"), spells out the
+// requirement pixelateShoePair actually needs (pixelateImage.js): two shoes
+// with a clear gap between them so each one crops separately — otherwise it
+// silently falls back to stretching the whole photo across both feet (the
+// old single-image behavior), which is what caused the body illustration to
+// show through the gap between the shoes in the first place.
+const SHOES_UPLOAD_HINT = '양쪽 신발이 서로 떨어져서 각각 잘 보이는 정면 사진일수록 두 짝을 따로 인식해서 예쁘게 붙여드려요.'
 
 const ACCENTS = {
   outer: 'pink',
@@ -127,6 +138,7 @@ function PixelDressUp() {
                 notePlaceholder={value === 'accessory' ? '착용 위치 (예: 머리, 목, 허리, 왼쪽 손목, 오른쪽 손목, 발목)' : undefined}
                 hasNeckline={value === 'top' || value === 'outer' ? neckFlags[value] : undefined}
                 onNecklineChange={value === 'top' || value === 'outer' ? handleNecklineChange(value) : undefined}
+                hint={value === 'shoes' ? SHOES_UPLOAD_HINT : undefined}
               />
             ))}
           </div>
@@ -195,7 +207,7 @@ function PixelDressUp() {
           너무 작게 나오면 배경 제거가 잘 안 될 수 있어요.
         </p>
         <div className={styles.exampleGrid}>
-          {EXAMPLE_PHOTOS.map(({ label, images }) => (
+          {EXAMPLE_PHOTOS.map(({ label, images, note }) => (
             <div key={label} className={styles.exampleGroup}>
               <p className={styles.exampleLabel}>{label}</p>
               <div className={styles.exampleImages}>
@@ -203,6 +215,7 @@ function PixelDressUp() {
                   <img key={src} src={src} alt={`${label} 예시 사진`} className={styles.exampleImage} />
                 ))}
               </div>
+              {note && <p className={styles.exampleNote}>{note}</p>}
             </div>
           ))}
         </div>
