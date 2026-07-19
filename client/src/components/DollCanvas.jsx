@@ -52,6 +52,23 @@ const FILL_CATEGORIES = new Set(['outer', 'top', 'bottom', 'shoes'])
 const SILHOUETTE_MASKED_CATEGORIES = new Set(['outer', 'bottom'])
 const PREVIEW_CANVAS_SCALE = 3 // resolution multiplier for the live-preview masked layers
 
+// 'bottom' clipped straight to the doll's exact leg silhouette read as
+// shrink-wrapped/skin-tight no matter how loose the actual uploaded pants
+// photo looked ("바지가 몸 일러스트 다리에 너무 딱 붙는 것 같아" — pants
+// look too tight against the leg illustration). Rather than dropping
+// 'bottom' out of SILHOUETTE_MASKED_CATEGORIES entirely (which would need
+// re-shrinking its LAYER_POSITIONS box to compensate, same as 'top' and
+// 'shoes' both needed after their own mask removal — see this file's
+// SILHOUETTE_MASKED_CATEGORIES comment above — since that box is
+// deliberately oversized on the assumption the mask trims it back), this
+// grows the clip mask outward a few px first (see `dilateMask`) so pants
+// get a little natural room around the leg instead of an exact second-skin
+// trace, while still trimming the box's deliberate overflow so nothing
+// spills past the body outline. Fraction of the canvas's own width/height.
+const MASK_DILATE_FRACTION_BY_CATEGORY = {
+  bottom: 0.03,
+}
+
 // Every hair-{gender}-{style}.png (a "wig" cutout with a transparent hole
 // for the face, client/src/assets/dollsprites/hair/) — glob-import all 12 at
 // once, indexed by [gender][style].
@@ -336,11 +353,44 @@ async function buildPositionedLayerUrl(src, gender, category, accessoryNote, has
 
   if (SILHOUETTE_MASKED_CATEGORIES.has(category)) {
     const maskImg = await loadImage(DOLL_MASK_IMAGES[gender])
+    const dilateFraction = MASK_DILATE_FRACTION_BY_CATEGORY[category] ?? 0
     ctx.globalCompositeOperation = 'destination-in'
-    ctx.drawImage(maskImg, 0, 0, canvas.width, canvas.height)
+    if (dilateFraction) {
+      ctx.drawImage(dilateMask(maskImg, canvas.width, canvas.height, dilateFraction), 0, 0)
+    } else {
+      ctx.drawImage(maskImg, 0, 0, canvas.width, canvas.height)
+    }
   }
 
   return canvas.toDataURL('image/png')
+}
+
+/**
+ * Grows a silhouette mask's opaque region outward by `dilateFraction` (of
+ * the target canvas's own width) before it's used to clip a garment layer —
+ * see MASK_DILATE_FRACTION_BY_CATEGORY's own comment for why. Draws the mask
+ * repeatedly at small offsets around a circle with an additive
+ * ('lighter') blend, which — since the mask is effectively binary (fully
+ * opaque body / fully transparent outside) — approximates a morphological
+ * dilate: any pixel within `dilatePx` of an originally-opaque pixel ends up
+ * opaque too.
+ */
+function dilateMask(maskImg, width, height, dilateFraction) {
+  const dilatePx = dilateFraction * width
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const ctx = canvas.getContext('2d')
+  ctx.globalCompositeOperation = 'lighter'
+  const steps = 12
+  for (let i = 0; i < steps; i++) {
+    const angle = (i / steps) * Math.PI * 2
+    const dx = Math.round(Math.cos(angle) * dilatePx)
+    const dy = Math.round(Math.sin(angle) * dilatePx)
+    ctx.drawImage(maskImg, dx, dy, width, height)
+  }
+  ctx.drawImage(maskImg, 0, 0, width, height)
+  return canvas
 }
 
 /**
@@ -444,7 +494,12 @@ async function compositeToDataUrl({ layers, gender, expression, eyeColor, hairSt
     layerCtx.imageSmoothingEnabled = false
     drawFill(layerCtx, img, x, y, w, h, getNeckCropRatio(key, neckFlags[key]))
     layerCtx.globalCompositeOperation = 'destination-in'
-    layerCtx.drawImage(maskImg, 0, 0, canvas.width, canvas.height)
+    const dilateFraction = MASK_DILATE_FRACTION_BY_CATEGORY[key] ?? 0
+    if (dilateFraction) {
+      layerCtx.drawImage(dilateMask(maskImg, canvas.width, canvas.height, dilateFraction), 0, 0)
+    } else {
+      layerCtx.drawImage(maskImg, 0, 0, canvas.width, canvas.height)
+    }
 
     ctx.drawImage(layerCanvas, 0, 0)
   }
