@@ -1,0 +1,155 @@
+.wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.toast {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  z-index: 10;
+  max-width: min(90vw, 280px);
+  padding: var(--space-xs) var(--space-lg);
+  background: var(--color-surface);
+  border: 2px solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  color: var(--color-ink);
+  box-shadow: var(--shadow-pop);
+  animation: toastPop 0.3s var(--ease-bounce), toastFade 0.3s ease-in 2.3s forwards;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.stage {
+  position: relative;
+  /* 0.75x the original 70vw/320px sizing, per request to shrink the doll. */
+  width: min(52.5vw, 240px);
+  /* Set per-gender by DollCanvas.jsx from the base illustration's real
+     pixel dimensions (see DOLL_BASE_SIZE in dollLayout.js) so the art never
+     stretches/letterboxes against a mismatched fixed ratio. */
+  aspect-ratio: var(--stage-ratio, 1 / 2);
+  margin: 0 auto;
+}
+
+.bodyImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.faceBox {
+  position: absolute;
+  pointer-events: none;
+}
+
+.faceImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* was `auto` (smooth/bilinear upscaling) — on the hair layer this blurred
+     the wig's face-hole edge into a soft gray-brown haze bleeding over the
+     mouth/cheek area beneath it; pixelated matches every other layer on
+     this stage (.bodyImage, .layerImageFull) and removes the blur. */
+  image-rendering: pixelated;
+}
+
+.layerImageFull {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* pre-positioned/clipped onto a canvas matching the stage's own aspect
+     ratio exactly (see DollCanvas.jsx's buildPositionedLayerUrl) — no
+     object-fit needed, the image already lines up 1:1 with the stage. */
+  image-rendering: pixelated;
+  animation: layerPopIn 0.3s var(--ease-bounce);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.progress {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-ink-soft);
+}
+
+.savedPreviewBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2xs);
+}
+
+.savedPreviewLabel {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-secondary);
+}
+
+.savedPreviewImage {
+  width: 140px;
+  height: auto;
+  border: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  image-rendering: pixelated;
+}
+
+@keyframes toastPop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -100%) scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+  }
+}
+
+@keyframes toastFade {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes layerPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast,
+  .layerImageFull {
+    animation: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .stage {
+    width: 240px;
+  }
+}

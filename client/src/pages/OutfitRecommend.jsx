@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import Card from '../components/Card'
+import Button from '../components/Button'
 import LocationSelector from '../components/LocationSelector'
 import GenderSelector from '../components/GenderSelector'
 import StyleSelector from '../components/StyleSelector'
@@ -146,6 +147,9 @@ function OutfitRecommend() {
         <p className={styles.eyebrow}>Outfit recommendation</p>
         <h1 className={styles.title}>오늘 뭐 입지?</h1>
         <p className={styles.lede}>위치와 취향을 알려주면 오늘 날씨에 맞는 코디를 추천해드려요.</p>
+        <Button to="/dressup" variant="secondary" className={styles.dressUpLink}>
+          픽셀아트로 입혀보기
+        </Button>
       </header>
 
       <div ref={setupRef} className={styles.setupSection}>

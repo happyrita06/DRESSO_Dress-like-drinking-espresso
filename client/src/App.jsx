@@ -17,6 +17,7 @@ import SplashIntro from './components/SplashIntro'
 import Home from './pages/Home'
 import MyWardrobe from './pages/MyWardrobe'
 import OutfitRecommend from './pages/OutfitRecommend'
+import PixelDressUp from './pages/PixelDressUp'
 import ShareFits from './pages/ShareFits'
 import Calendar from './pages/Calendar'
 import Community from './pages/Community'
@@ -70,6 +71,7 @@ function App() {
                     <Route path="/" element={<Home />} />
                     <Route path="/wardrobe" element={<MyWardrobe />} />
                     <Route path="/recommend" element={<OutfitRecommend />} />
+                    <Route path="/dressup" element={<PixelDressUp />} />
                     <Route path="/share-fits" element={<ShareFits />} />
                     <Route path="/calendar" element={<Calendar />} />
                     <Route path="/community" element={<Community />} />

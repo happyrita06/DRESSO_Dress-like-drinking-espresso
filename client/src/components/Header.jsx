@@ -8,6 +8,7 @@ const PRIMARY_LINKS = [
   { to: '/about', label: 'About app' },
   { to: '/wardrobe', label: 'My wardrobe' },
   { to: '/recommend', label: 'Outfit recommendation' },
+  { to: '/dressup', label: 'Dress Up' },
   { to: '/share-fits', label: 'Share my fits' },
   { to: '/calendar', label: '캘린더' },
   { to: '/community', label: '커뮤니티' },

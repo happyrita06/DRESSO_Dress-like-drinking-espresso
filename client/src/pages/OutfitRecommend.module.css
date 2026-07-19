@@ -33,6 +33,11 @@
   max-width: 56ch;
 }
 
+.dressUpLink {
+  align-self: flex-start;
+  margin-top: var(--space-2xs);
+}
+
 .setupSection {
   display: flex;
   flex-direction: column;
