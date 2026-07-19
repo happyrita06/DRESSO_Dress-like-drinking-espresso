@@ -22,10 +22,14 @@
      paper/tape objects stuck ON TOP of the glass, not part of the glass
      itself, which is what keeps this a "glass card in a pixel scrapbook"
      rather than an aesthetic clash. */
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.32), rgba(255, 234, 245, 0.2));
-  -webkit-backdrop-filter: blur(26px) saturate(1.8);
-  backdrop-filter: blur(26px) saturate(1.8);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  /* Pushed much more transparent per an explicit follow-up request ("카드
+     배경을 거의 투명에 가깝게") — fill alpha 0.32/0.2 -> 0.14/0.08 and blur
+     26px -> 12px, so the animated background actually shows through
+     clearly instead of reading as a mostly-opaque tinted panel. */
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.14), rgba(255, 234, 245, 0.08));
+  -webkit-backdrop-filter: blur(12px) saturate(1.6);
+  backdrop-filter: blur(12px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
   box-shadow: var(--shadow-shift-x) var(--shadow-shift-y) 32px rgba(255, 116, 184, 0.18),

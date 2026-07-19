@@ -63,9 +63,11 @@
   border-radius: var(--radius-md);
   cursor: pointer;
   overflow: hidden;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.3), rgba(255, 234, 245, 0.18));
-  -webkit-backdrop-filter: blur(18px) saturate(1.6);
-  backdrop-filter: blur(18px) saturate(1.6);
+  /* Pushed much more transparent alongside Card's own formula (see that
+     file's comment) per the same follow-up request. */
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.13), rgba(255, 234, 245, 0.08));
+  -webkit-backdrop-filter: blur(9px) saturate(1.5);
+  backdrop-filter: blur(9px) saturate(1.5);
   transition: transform var(--transition-fast), border-color var(--transition-fast),
     background-color var(--transition-fast);
 }
