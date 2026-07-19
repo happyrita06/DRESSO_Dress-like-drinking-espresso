@@ -1,6 +1,6 @@
 # Dresso
 
-날씨 기반 패션 추천 웹앱. Dress + espresso — 커피 한 잔처럼 가볍게, 오늘 뭘 입을지에 대한 고민을 덜어주는 서비스를 목표로 합니다. 위치·성별·선호 스타일과 실시간 날씨를 조합해 코디를 추천하고, 내 옷장을 기록하고, 커뮤니티에서 코디를 공유할 수 있습니다.
+날씨 기반 패션 추천 웹앱. Dress + espresso — 커피 한 잔처럼 가볍게, 오늘 뭘 입을지에 대한 고민을 덜어주는 서비스를 목표로 합니다. 위치·성별·선호 스타일과 실시간 날씨를 조합해 코디를 추천하고, 내 옷장을 기록하고, 커뮤니티에서 코디를 공유할 수 있습니다. 옷 사진을 올리면 픽셀아트로 변환해 종이인형에 입혀보는 "픽셀 드레스업"(`/dressup`, 베타) 기능도 있습니다.
 
 ## 기술 스택
 
@@ -37,20 +37,26 @@ dresso/
                               GenderSelector, LinkImportForm, PostCard,
                               UserProfileModal, MonthCalendar, WardrobeDoorIntro,
                               TodayMoodboard, SafeImg,
+                              DollCanvas, UploadSlot, HairPicker,
+                              ExpressionPicker, EyeColorPicker (픽셀 드레스업용),
                               GradientMesh/ParallaxBackground/PixelSky/
                               ShootingStars/FloatingParticles/Dither/ClickSpark
                               (장식용 배경·인터랙션 레이어)
       pages/                 Home, MyWardrobe, OutfitRecommend, ShareFits,
                               Calendar, Community, About, Contact, Business,
-                              Login, Register
+                              Login, Register, Account, PixelDressUp
       contexts/               UserContext, LocationContext, StyleContext
-      hooks/                  useAuth, useWeather, useWeeklyForecast
+      hooks/                  useAuth, useWeather, useWeeklyForecast,
+                              useParallaxPointer, useBackgroundPause
       styles/                 global.css, variables.css
       utils/                  WeatherService.js, recommendEngine.js, apiClient.js,
                               authApi/wardrobeApi/combosApi/postsApi/usersApi/
-                              calendarNotesApi/linkPreviewApi.js, dateUtils.js
+                              calendarNotesApi/linkPreviewApi.js, dateUtils.js,
+                              scrollReveal.js, pixelateImage.js (픽셀 드레스업용
+                              캔버스 기반 픽셀화 + 배경 제거)
       data/                   regions.js, styleCategories.js, wardrobeCategories.js,
-                              weeklyComments.js, moodboardData.js
+                              weeklyComments.js, moodboardData.js, dollLayout.js
+                              (픽셀 드레스업 인형 좌표 정의)
     public/
   server/                     Express 백엔드
     routes/                  authRoutes, wardrobeRoutes, outfitComboRoutes,
@@ -140,6 +146,8 @@ VITE_API_BASE_URL=http://localhost:5000/api
 | About app | `/about` | 없음 (정적) |
 | 문의하기 | `/contact` | `POST /api/contact` |
 | 비즈니스 제안하기 | `/business` | `POST /api/business-inquiries` |
+| 계정 설정 | `/account` | `GET /api/auth/me`, `PATCH /api/users/me` |
+| 픽셀 드레스업 (베타) | `/dressup` | 없음 (완전 클라이언트 사이드) |
 
 ## 다음 단계 (Next Steps)
 
