@@ -17,17 +17,28 @@
 export const CATEGORY_ORDER = ['shoes', 'bottom', 'top', 'outer', 'accessory']
 
 // z-index order (low -> high): base illustration (implicit 0) < face (head
-// overlay) < shoes < bottom < top < outer < accessory < hair (wig, framing
-// the face with a cutout hole so face still shows through). See
-// CATEGORY_ORDER's own comment above for the follow-up request behind the
-// shoes/bottom/top/outer/accessory order; hair was moved to the very top per
-// a later follow-up request ("머리카락 레이어도 맨 위에 있도록 해줘") — it was
-// previously just above face (below all clothing), which meant tall hair
-// (long/updos) hidden behind e.g. outer collars/hoods.
+// overlay) < shoes < bottom < accessoryBelowTop < top < outer < accessory <
+// hair (wig, framing the face with a cutout hole so face still shows
+// through). See CATEGORY_ORDER's own comment above for the follow-up
+// request behind the shoes/bottom/top/outer/accessory order; hair was moved
+// to the very top per a later follow-up request ("머리카락 레이어도 맨
+// 위에 있도록 해줘") — it was previously just above face (below all
+// clothing), which meant tall hair (long/updos) hidden behind e.g. outer
+// collars/hoods.
+//
+// `accessory` here covers only the neck zone (necklaces/chokers) per a
+// later follow-up request ("악세사리들은 '목'에 거는 목걸이 빼고는 전부
+// 상의 레이어 아래로 가도록 설정") — every other accessory zone (head,
+// waist, wrist, ankle) now renders at `accessoryBelowTop` instead, so a hat/
+// belt/bracelet/anklet sits under the top (and outer) rather than pasted
+// on top of the shirt. See resolveAccessoryPosition's `isNeck` flag below
+// for how DollCanvas.jsx splits one accessory upload into these two
+// z-layers.
 export const LAYER_Z_INDEX = {
   face: 1,
   shoes: 2,
   bottom: 3,
+  accessoryBelowTop: 3.5,
   top: 4,
   outer: 5,
   accessory: 6,
@@ -693,29 +704,39 @@ const ANKLE_RIGHT_KEYWORDS = ['오른쪽', '오른발목', '오른발']
  * caller (DollCanvas.jsx) draws the same uploaded image once per returned
  * zone, each with its own `rotate`. Ankle notes follow the identical rule
  * per a later follow-up request ("발목도 팔찌와 마찬가지로... 룰로 설정").
+ *
+ * Every returned zone is tagged with `isNeck` (true only for the neck
+ * zone) per a later follow-up request ("악세사리들은 '목'에 거는 목걸이
+ * 빼고는 전부 상의 레이어 아래로 가도록 설정") — DollCanvas.jsx uses this
+ * to split one accessory upload's resolved zones across two z-layers
+ * (LAYER_Z_INDEX.accessory for neck, LAYER_Z_INDEX.accessoryBelowTop for
+ * everything else) instead of rendering them all as one flattened image.
  */
 export function resolveAccessoryPosition(gender, note) {
   const zones = ACCESSORY_ZONES[gender] ?? ACCESSORY_ZONES.f
   const text = (note ?? '').trim()
+  const tag = (zone) => ({ ...zone, isNeck: false })
 
   if (text && WRIST_KEYWORDS.some((kw) => text.includes(kw))) {
-    if (WRIST_LEFT_KEYWORDS.some((kw) => text.includes(kw))) return [zones.wristLeft]
-    if (WRIST_RIGHT_KEYWORDS.some((kw) => text.includes(kw))) return [zones.wristRight]
-    return [zones.wristLeft, zones.wristRight]
+    if (WRIST_LEFT_KEYWORDS.some((kw) => text.includes(kw))) return [tag(zones.wristLeft)]
+    if (WRIST_RIGHT_KEYWORDS.some((kw) => text.includes(kw))) return [tag(zones.wristRight)]
+    return [tag(zones.wristLeft), tag(zones.wristRight)]
   }
 
   if (text && ANKLE_KEYWORDS.some((kw) => text.includes(kw))) {
-    if (ANKLE_LEFT_KEYWORDS.some((kw) => text.includes(kw))) return [zones.ankleLeft]
-    if (ANKLE_RIGHT_KEYWORDS.some((kw) => text.includes(kw))) return [zones.ankleRight]
-    return [zones.ankleLeft, zones.ankleRight]
+    if (ANKLE_LEFT_KEYWORDS.some((kw) => text.includes(kw))) return [tag(zones.ankleLeft)]
+    if (ANKLE_RIGHT_KEYWORDS.some((kw) => text.includes(kw))) return [tag(zones.ankleRight)]
+    return [tag(zones.ankleLeft), tag(zones.ankleRight)]
   }
 
   if (text) {
     for (const [keywords, zoneKey] of ACCESSORY_KEYWORDS) {
-      if (keywords.some((kw) => text.includes(kw))) return [zones[zoneKey]]
+      if (keywords.some((kw) => text.includes(kw))) {
+        return [{ ...zones[zoneKey], isNeck: zoneKey === 'neck' }]
+      }
     }
   }
-  return [zones.neck]
+  return [{ ...zones.neck, isNeck: true }]
 }
 
 export const CATEGORY_LABELS = {

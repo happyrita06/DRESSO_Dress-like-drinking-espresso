@@ -185,22 +185,33 @@ function DollCanvas({
     let cancelled = false
 
     async function rebuild() {
-      const entries = await Promise.all(
-        CATEGORY_ORDER.map(async (key) => {
-          const src = layers[key]
-          if (!src) return [key, null]
-          try {
-            const url = await buildPositionedLayerUrl(src, gender, key, accessoryNote, neckFlags[key])
-            return [key, url]
-          } catch (err) {
-            // eslint-disable-next-line no-console -- surfaced so a silent
-            // per-layer render failure is diagnosable instead of just
-            // rendering nothing with no trace.
-            console.error(`[PixelDressUp] failed to render "${key}" layer:`, err)
-            return [key, null]
-          }
-        })
-      )
+      const entries = (
+        await Promise.all(
+          CATEGORY_ORDER.map(async (key) => {
+            const src = layers[key]
+            if (!src) return key === 'accessory' ? [['accessory', null], ['accessoryBelowTop', null]] : [[key, null]]
+            try {
+              const url = await buildPositionedLayerUrl(src, gender, key, accessoryNote, neckFlags[key])
+              // accessory splits into two z-layers (see buildPositionedLayerUrl's
+              // own comment) instead of the single url every other category
+              // returns — everything else is unaffected.
+              if (key === 'accessory') {
+                return [
+                  ['accessory', url.neck],
+                  ['accessoryBelowTop', url.other],
+                ]
+              }
+              return [[key, url]]
+            } catch (err) {
+              // eslint-disable-next-line no-console -- surfaced so a silent
+              // per-layer render failure is diagnosable instead of just
+              // rendering nothing with no trace.
+              console.error(`[PixelDressUp] failed to render "${key}" layer:`, err)
+              return key === 'accessory' ? [['accessory', null], ['accessoryBelowTop', null]] : [[key, null]]
+            }
+          })
+        )
+      ).flat()
       if (!cancelled) setPreviewLayers(Object.fromEntries(entries))
     }
 
@@ -268,6 +279,15 @@ function DollCanvas({
           <div className={styles.faceBox} style={{ ...hairPos, zIndex: LAYER_Z_INDEX.hair }}>
             <img src={hairSrc} alt="" aria-hidden="true" className={styles.faceImage} />
           </div>
+        )}
+
+        {previewLayers.accessoryBelowTop && (
+          <img
+            src={previewLayers.accessoryBelowTop}
+            alt={`${CATEGORY_LABELS.accessory} 레이어`}
+            className={styles.layerImageFull}
+            style={{ zIndex: LAYER_Z_INDEX.accessoryBelowTop }}
+          />
         )}
 
         {CATEGORY_ORDER.map((key) => {
@@ -341,15 +361,35 @@ async function buildPositionedLayerUrl(src, gender, category, accessoryNote, has
     // resolveAccessoryPosition returns an array — usually one zone, but two
     // (wristLeft + wristRight) when a wrist accessory's note doesn't pin it
     // to one side, so it renders symmetrically on both wrists. See that
-    // function's own comment in dollLayout.js.
+    // function's own comment in dollLayout.js. Split across two canvases by
+    // `isNeck` (also from resolveAccessoryPosition) rather than one flattened
+    // image, so the caller can stack them at two different z-indexes —
+    // LAYER_Z_INDEX.accessory (neck, above top/outer) vs
+    // LAYER_Z_INDEX.accessoryBelowTop (everything else, under top) — per an
+    // explicit follow-up request that only neck-worn accessories should sit
+    // above the shirt.
+    const neckCanvas = document.createElement('canvas')
+    neckCanvas.width = canvas.width
+    neckCanvas.height = canvas.height
+    const neckCtx = neckCanvas.getContext('2d')
+    neckCtx.imageSmoothingEnabled = false
+    let hasNeck = false
+    let hasOther = false
+
     for (const pos of resolveAccessoryPosition(gender, accessoryNote)) {
+      const targetCtx = pos.isNeck ? neckCtx : ctx
+      if (pos.isNeck) hasNeck = true
+      else hasOther = true
       const x = (parsePercent(pos.left) / 100) * canvas.width
       const y = (parsePercent(pos.top) / 100) * canvas.height
       const w = (parsePercent(pos.width) / 100) * canvas.width
       const h = (parsePercent(pos.height) / 100) * canvas.height
-      drawContain(ctx, img, x, y, w, h, pos.rotate)
+      drawContain(targetCtx, img, x, y, w, h, pos.rotate)
     }
-    return canvas.toDataURL('image/png')
+    return {
+      neck: hasNeck ? neckCanvas.toDataURL('image/png') : null,
+      other: hasOther ? canvas.toDataURL('image/png') : null,
+    }
   }
 
   const pos = LAYER_POSITIONS[gender][category]
@@ -461,7 +501,39 @@ async function compositeToDataUrl({ layers, gender, expression, eyeColor, hairSt
   }
 
   const genderLayerPositions = LAYER_POSITIONS[gender]
-  for (const key of CATEGORY_ORDER) {
+  // 'accessory' is drawn twice — once for its non-neck zones (before 'top',
+  // so a hat/belt/bracelet/anklet sits under the shirt) and once for its
+  // neck zone (after 'outer', same spot 'accessory' always drew — see
+  // LAYER_Z_INDEX's own comment in dollLayout.js for why only neck stays
+  // above top/outer). `drawAccessoryLayer` below does one pass filtered by
+  // `wantNeck`; COMPOSITE_ORDER slots each pass in at the right point
+  // instead of CATEGORY_ORDER's single fixed 'accessory' position.
+  const COMPOSITE_ORDER = ['shoes', 'bottom', 'accessoryBelowTop', 'top', 'outer', 'accessory']
+
+  async function drawAccessoryLayer(wantNeck) {
+    const src = layers.accessory
+    if (!src) return
+    const img = await loadImage(src)
+    for (const pos of resolveAccessoryPosition(gender, accessoryNote)) {
+      if (pos.isNeck !== wantNeck) continue
+      const x = (parsePercent(pos.left) / 100) * canvas.width
+      const y = (parsePercent(pos.top) / 100) * canvas.height
+      const w = (parsePercent(pos.width) / 100) * canvas.width
+      const h = (parsePercent(pos.height) / 100) * canvas.height
+      drawContain(ctx, img, x, y, w, h, pos.rotate)
+    }
+  }
+
+  for (const key of COMPOSITE_ORDER) {
+    if (key === 'accessoryBelowTop') {
+      await drawAccessoryLayer(false)
+      continue
+    }
+    if (key === 'accessory') {
+      await drawAccessoryLayer(true)
+      continue
+    }
+
     const src = layers[key]
     if (!src) continue
 
@@ -482,19 +554,6 @@ async function compositeToDataUrl({ layers, gender, expression, eyeColor, hairSt
     }
 
     const img = await loadImage(src)
-
-    if (key === 'accessory') {
-      // see buildPositionedLayerUrl's own comment — may render at two
-      // symmetric wrist positions instead of one.
-      for (const pos of resolveAccessoryPosition(gender, accessoryNote)) {
-        const x = (parsePercent(pos.left) / 100) * canvas.width
-        const y = (parsePercent(pos.top) / 100) * canvas.height
-        const w = (parsePercent(pos.width) / 100) * canvas.width
-        const h = (parsePercent(pos.height) / 100) * canvas.height
-        drawContain(ctx, img, x, y, w, h, pos.rotate)
-      }
-      continue
-    }
 
     const pos = genderLayerPositions[key]
     const x = (parsePercent(pos.left) / 100) * canvas.width
