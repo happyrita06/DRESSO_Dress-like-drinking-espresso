@@ -73,8 +73,13 @@ const PREVIEW_CANVAS_SCALE = 3 // resolution multiplier for the live-preview mas
 // leg's own taper gets counteracted by an increasingly wider clip, so a
 // wide-leg garment can actually stay wide near the ankle instead of being
 // funneled back down to the doll's real (much narrower) ankle width.
+// topScale scaled 0.9x around the same waist line per an explicit
+// follow-up request ("하의 허리쪽만 크기 0.9배 해줘") — narrows just the
+// waist end of the trapezoid (1.1 -> 0.99) while bottomScale (the ankle
+// end) stays as-is, matching how a wrap-tie/cinched waistband narrows only
+// the top of an otherwise-baggy pant leg.
 const MASK_TRAPEZOID_SCALE_BY_CATEGORY = {
-  bottom: { topScale: 1.1, bottomScale: 1.75 },
+  bottom: { topScale: 0.99, bottomScale: 1.75 },
 }
 
 // Every hair-{gender}-{style}.png (a "wig" cutout with a transparent hole
