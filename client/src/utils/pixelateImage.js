@@ -318,14 +318,31 @@ function detectShoeBlobs(img, category) {
   // cut one shoe in half.
   if (leftBlob.maxX > rightBlob.minX) return null
 
-  return [leftBlob, rightBlob].map((b) => cropBlobWithPadding(data, w, h, visited, b))
+  // The padding margin below is symmetric by default, but padding outward on
+  // the side facing the *other* shoe risks pulling a sliver of the real gap
+  // between the two shoes back into the crop as opaque pixels — the flood
+  // fill only marks background reachable from the frame edges, and a
+  // shadow/gradient in that gap can fail the background color-distance
+  // check without ever touching an edge, surviving as unremoved "foreground"
+  // once padding reaches into it. That leftover sliver then renders as a
+  // visible light strip between the doll's legs once each half is stretched
+  // into its own shoesLeft/shoesRight box ("하의가 발목 안쪽이 비어있다" —
+  // reported as a gap, but it's actually this unremoved gap pixels showing
+  // through where the pants are correctly clipped away by the body
+  // silhouette). Skipping padding on just the inner-facing edge of each blob
+  // keeps the safety margin everywhere else while guaranteeing neither crop
+  // ever reaches past its own detected foreground toward the other shoe.
+  return [
+    cropBlobWithPadding(data, w, h, visited, leftBlob, { padRight: false }),
+    cropBlobWithPadding(data, w, h, visited, rightBlob, { padLeft: false }),
+  ]
 }
 
-function cropBlobWithPadding(data, w, h, visited, blob) {
+function cropBlobWithPadding(data, w, h, visited, blob, { padLeft = true, padRight = true } = {}) {
   const padX = Math.round((blob.maxX - blob.minX + 1) * SHOE_BLOB_PADDING_FRACTION)
   const padY = Math.round((blob.maxY - blob.minY + 1) * SHOE_BLOB_PADDING_FRACTION)
-  const minX = Math.max(0, blob.minX - padX)
-  const maxX = Math.min(w - 1, blob.maxX + padX)
+  const minX = Math.max(0, blob.minX - (padLeft ? padX : 0))
+  const maxX = Math.min(w - 1, blob.maxX + (padRight ? padX : 0))
   const minY = Math.max(0, blob.minY - padY)
   const maxY = Math.min(h - 1, blob.maxY + padY)
   const cropW = maxX - minX + 1
