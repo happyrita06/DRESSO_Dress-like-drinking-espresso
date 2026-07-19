@@ -324,17 +324,27 @@ function detectShoeBlobs(img, category) {
   // fill only marks background reachable from the frame edges, and a
   // shadow/gradient in that gap can fail the background color-distance
   // check without ever touching an edge, surviving as unremoved "foreground"
-  // once padding reaches into it. That leftover sliver then renders as a
-  // visible light strip between the doll's legs once each half is stretched
-  // into its own shoesLeft/shoesRight box ("하의가 발목 안쪽이 비어있다" —
-  // reported as a gap, but it's actually this unremoved gap pixels showing
-  // through where the pants are correctly clipped away by the body
-  // silhouette). Skipping padding on just the inner-facing edge of each blob
-  // keeps the safety margin everywhere else while guaranteeing neither crop
-  // ever reaches past its own detected foreground toward the other shoe.
+  // once padding reaches into it. Skipping padding on just the inner-facing
+  // edge of each blob keeps the safety margin everywhere else while
+  // guaranteeing neither crop ever reaches past its own detected foreground
+  // toward the other shoe.
+  //
+  // That alone isn't enough, though: a real shoe/boot's silhouette is rarely
+  // a perfect rectangle (an ankle boot's collar is routinely narrower than
+  // its sole), so even a perfectly-tight crop can have rows where the
+  // opaque pixels stop short of the crop's own inner edge. Since
+  // shoesLeft/shoesRight (dollLayout.js) are drawn with `drawFill` (a
+  // straight stretch to a rectangular box, no silhouette masking — see
+  // SILHOUETTE_MASKED_CATEGORIES in DollCanvas.jsx), any such short row
+  // stretches into a visible light gap at the seam between the two feet
+  // ("하의가 발목 안쪽이 비어있다" — actually the shoes layer failing to
+  // reach the seam, not the pants). `extendRowsToInnerEdge` closes that by
+  // extending each row's nearest-to-seam opaque pixel out to the crop's own
+  // inner edge, only on that one seam-facing side — the outer/top/bottom
+  // edges keep the real photographed silhouette untouched.
   return [
-    cropBlobWithPadding(data, w, h, visited, leftBlob, { padRight: false }),
-    cropBlobWithPadding(data, w, h, visited, rightBlob, { padLeft: false }),
+    extendRowsToInnerEdge(cropBlobWithPadding(data, w, h, visited, leftBlob, { padRight: false }), 'right'),
+    extendRowsToInnerEdge(cropBlobWithPadding(data, w, h, visited, rightBlob, { padLeft: false }), 'left'),
   ]
 }
 
@@ -365,6 +375,55 @@ function cropBlobWithPadding(data, w, h, visited, blob, { padLeft = true, padRig
     }
   }
   ctx.putImageData(outData, 0, 0)
+  return canvas
+}
+
+/**
+ * For every row that has at least one opaque pixel, extends that row's
+ * nearest-to-`side` opaque pixel out to the canvas's own edge on that side
+ * (flat color/alpha repeat) — closing any gap left by a non-rectangular
+ * garment silhouette stretched into a rectangular box. Rows with no opaque
+ * pixel at all (above/below the garment, inside its own padding margin) are
+ * left untouched. See detectShoeBlobs' own comment for why this only runs
+ * on the inner (seam-facing) edge of each shoe crop.
+ */
+function extendRowsToInnerEdge(canvas, side) {
+  const w = canvas.width
+  const h = canvas.height
+  const ctx = canvas.getContext('2d')
+  const imageData = ctx.getImageData(0, 0, w, h)
+  const { data } = imageData
+  for (let y = 0; y < h; y++) {
+    const rowOffset = y * w * 4
+    if (side === 'right') {
+      let x = w - 1
+      while (x >= 0 && data[rowOffset + x * 4 + 3] === 0) x--
+      if (x < 0 || x === w - 1) continue
+      const srcOffset = rowOffset + x * 4
+      const [r, g, b, a] = [data[srcOffset], data[srcOffset + 1], data[srcOffset + 2], data[srcOffset + 3]]
+      for (let fx = x + 1; fx < w; fx++) {
+        const offset = rowOffset + fx * 4
+        data[offset] = r
+        data[offset + 1] = g
+        data[offset + 2] = b
+        data[offset + 3] = a
+      }
+    } else {
+      let x = 0
+      while (x < w && data[rowOffset + x * 4 + 3] === 0) x++
+      if (x >= w || x === 0) continue
+      const srcOffset = rowOffset + x * 4
+      const [r, g, b, a] = [data[srcOffset], data[srcOffset + 1], data[srcOffset + 2], data[srcOffset + 3]]
+      for (let fx = 0; fx < x; fx++) {
+        const offset = rowOffset + fx * 4
+        data[offset] = r
+        data[offset + 1] = g
+        data[offset + 2] = b
+        data[offset + 3] = a
+      }
+    }
+  }
+  ctx.putImageData(imageData, 0, 0)
   return canvas
 }
 
