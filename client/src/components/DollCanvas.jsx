@@ -55,24 +55,26 @@ const PREVIEW_CANVAS_SCALE = 3 // resolution multiplier for the live-preview mas
 // 'bottom' clipped straight to the doll's exact leg silhouette read as
 // shrink-wrapped/skin-tight no matter how loose the actual uploaded pants
 // photo looked ("바지가 몸 일러스트 다리에 너무 딱 붙는 것 같아" — pants
-// look too tight against the leg illustration; a follow-up with a boxy/
-// wide-leg sweatpants reference photo clarified the complaint is
-// specifically the *outer* leg edge, "다리 바깥쪽에 딱 붙지 않게"). Rather
-// than dropping 'bottom' out of SILHOUETTE_MASKED_CATEGORIES entirely
-// (which would need re-shrinking its LAYER_POSITIONS box to compensate,
-// same as 'top' and 'shoes' both needed after their own mask removal — see
-// this file's SILHOUETTE_MASKED_CATEGORIES comment above — since that box
-// is deliberately oversized on the assumption the mask trims it back),
-// this grows the clip mask outward first (see `dilateMask`) so pants get
-// natural room around the leg instead of an exact second-skin trace, while
-// still trimming the box's deliberate overflow so nothing spills past the
-// body outline. `x` is weighted much heavier than `y`: the ask is
-// specifically sideways room (a boxy/wide-leg silhouette), not a taller/
-// shorter leg — a large vertical dilate would just round off the waist and
-// crotch oddly without helping the actual complaint. Fractions of the
-// canvas's own width.
-const MASK_DILATE_FRACTION_BY_CATEGORY = {
-  bottom: { x: 0.07, y: 0.02 },
+// look too tight against the leg illustration). A first attempt widened the
+// clip mask by a uniform sideways radius (an ellipse dilate), which helped
+// a little everywhere but still tapered down with the leg's own real shape
+// — tested against a boxy wide-leg/balloon-fit reference photo (cuffed at
+// the ankle but ballooning out above it) it still came out visibly tapered
+// at the ankle instead of staying wide ("아직도 좀 붙는 핏"), since a
+// uniform-radius grow just traces a fatter version of the same tapered leg
+// outline rather than a genuinely different (boxier) one. Rather than
+// dropping 'bottom' out of SILHOUETTE_MASKED_CATEGORIES entirely (which
+// would need re-shrinking its LAYER_POSITIONS box to compensate, same as
+// 'top' and 'shoes' both needed after their own mask removal — see this
+// file's SILHOUETTE_MASKED_CATEGORIES comment above — since that box is
+// deliberately oversized on the assumption the mask trims it back), this
+// instead stretches the clip mask horizontally per row with a scale that
+// grows from the waist down to the ankle (see `widenMaskTrapezoid`) — the
+// leg's own taper gets counteracted by an increasingly wider clip, so a
+// wide-leg garment can actually stay wide near the ankle instead of being
+// funneled back down to the doll's real (much narrower) ankle width.
+const MASK_TRAPEZOID_SCALE_BY_CATEGORY = {
+  bottom: { topScale: 1.1, bottomScale: 1.75 },
 }
 
 // Every hair-{gender}-{style}.png (a "wig" cutout with a transparent hole
@@ -359,10 +361,12 @@ async function buildPositionedLayerUrl(src, gender, category, accessoryNote, has
 
   if (SILHOUETTE_MASKED_CATEGORIES.has(category)) {
     const maskImg = await loadImage(DOLL_MASK_IMAGES[gender])
-    const dilateFraction = MASK_DILATE_FRACTION_BY_CATEGORY[category]
+    const trapezoidScale = MASK_TRAPEZOID_SCALE_BY_CATEGORY[category]
     ctx.globalCompositeOperation = 'destination-in'
-    if (dilateFraction) {
-      ctx.drawImage(dilateMask(maskImg, canvas.width, canvas.height, dilateFraction), 0, 0)
+    if (trapezoidScale) {
+      const topPct = parsePercent(pos.top) / 100
+      const bottomPct = topPct + parsePercent(pos.height) / 100
+      ctx.drawImage(widenMaskTrapezoid(maskImg, canvas.width, canvas.height, { topPct, bottomPct, ...trapezoidScale }), 0, 0)
     } else {
       ctx.drawImage(maskImg, 0, 0, canvas.width, canvas.height)
     }
@@ -372,32 +376,40 @@ async function buildPositionedLayerUrl(src, gender, category, accessoryNote, has
 }
 
 /**
- * Grows a silhouette mask's opaque region outward before it's used to clip
- * a garment layer — see MASK_DILATE_FRACTION_BY_CATEGORY's own comment for
- * why. `{ x, y }` are fractions of the target canvas's own width, so the
- * grow amount can be (and for 'bottom' is) heavier sideways than vertically.
- * Draws the mask repeatedly at small elliptical offsets with an additive
- * ('lighter') blend, which — since the mask is effectively binary (fully
- * opaque body / fully transparent outside) — approximates a morphological
- * dilate: any pixel within the ellipse of an originally-opaque pixel ends
- * up opaque too.
+ * Stretches a silhouette mask horizontally, row by row, with a scale that
+ * ramps linearly from `topScale` (at `topPct` of the canvas's height) to
+ * `bottomScale` (at `bottomPct`) — see MASK_TRAPEZOID_SCALE_BY_CATEGORY's
+ * own comment for why this exists instead of a uniform-radius dilate. Rows
+ * above `topPct`/below `bottomPct` clamp to the nearest end scale rather
+ * than continuing to extrapolate. Each row is stretched around the
+ * canvas's own horizontal center, since the leg (and the garment box
+ * clipped to it) is itself horizontally centered on the stage.
  */
-function dilateMask(maskImg, width, height, { x: xFraction, y: yFraction }) {
-  const dilatePxX = xFraction * width
-  const dilatePxY = yFraction * width
+function widenMaskTrapezoid(maskImg, width, height, { topPct, bottomPct, topScale, bottomScale }) {
+  // Rasterize the mask at the target canvas's own resolution first — the
+  // per-row slicing below reads source rows 1:1 against `height`, which
+  // only lines up once the source has actually been scaled to `width` x
+  // `height` (maskImg's own natural size is the much smaller doll-sprite
+  // resolution, e.g. 242x513; slicing rows against that directly reads
+  // past its real height for most of the canvas and renders blank).
+  const baseCanvas = document.createElement('canvas')
+  baseCanvas.width = width
+  baseCanvas.height = height
+  baseCanvas.getContext('2d').drawImage(maskImg, 0, 0, width, height)
+
   const canvas = document.createElement('canvas')
   canvas.width = width
   canvas.height = height
   const ctx = canvas.getContext('2d')
-  ctx.globalCompositeOperation = 'lighter'
-  const steps = 16
-  for (let i = 0; i < steps; i++) {
-    const angle = (i / steps) * Math.PI * 2
-    const dx = Math.round(Math.cos(angle) * dilatePxX)
-    const dy = Math.round(Math.sin(angle) * dilatePxY)
-    ctx.drawImage(maskImg, dx, dy, width, height)
+  const topPx = topPct * height
+  const bottomPx = bottomPct * height
+  for (let y = 0; y < height; y++) {
+    const t = Math.min(1, Math.max(0, (y - topPx) / (bottomPx - topPx)))
+    const scale = topScale + (bottomScale - topScale) * t
+    const dw = width * scale
+    const dx = (width - dw) / 2
+    ctx.drawImage(baseCanvas, 0, y, width, 1, dx, y, dw, 1)
   }
-  ctx.drawImage(maskImg, 0, 0, width, height)
   return canvas
 }
 
@@ -502,9 +514,15 @@ async function compositeToDataUrl({ layers, gender, expression, eyeColor, hairSt
     layerCtx.imageSmoothingEnabled = false
     drawFill(layerCtx, img, x, y, w, h, getNeckCropRatio(key, neckFlags[key]))
     layerCtx.globalCompositeOperation = 'destination-in'
-    const dilateFraction = MASK_DILATE_FRACTION_BY_CATEGORY[key] ?? 0
-    if (dilateFraction) {
-      layerCtx.drawImage(dilateMask(maskImg, canvas.width, canvas.height, dilateFraction), 0, 0)
+    const trapezoidScale = MASK_TRAPEZOID_SCALE_BY_CATEGORY[key]
+    if (trapezoidScale) {
+      const topPct = parsePercent(pos.top) / 100
+      const bottomPct = topPct + parsePercent(pos.height) / 100
+      layerCtx.drawImage(
+        widenMaskTrapezoid(maskImg, canvas.width, canvas.height, { topPct, bottomPct, ...trapezoidScale }),
+        0,
+        0
+      )
     } else {
       layerCtx.drawImage(maskImg, 0, 0, canvas.width, canvas.height)
     }
