@@ -10,8 +10,8 @@
      the backdrop, a heavy one homogenizes it into a soft color wash with
      no sharp shapes left to compete with the nav text. */
   background: rgba(255, 249, 252, 0.38);
-  backdrop-filter: blur(32px) saturate(1.9);
   -webkit-backdrop-filter: blur(32px) saturate(1.9);
+  backdrop-filter: blur(32px) saturate(1.9);
   border-bottom: 1px solid rgba(255, 255, 255, 0.55);
   box-shadow: 0 0 0 rgba(74, 16, 48, 0);
   transition: box-shadow var(--transition-base), background-color var(--transition-base);

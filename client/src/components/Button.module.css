@@ -107,8 +107,8 @@
 .secondary {
   color: var(--color-secondary-dark);
   background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(16px) saturate(1.6);
   -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  backdrop-filter: blur(16px) saturate(1.6);
   border: 2px solid var(--color-secondary);
 }
 
@@ -126,6 +126,6 @@
 .ghost:hover:not(:disabled) {
   color: var(--color-ink);
   background: rgba(255, 255, 255, 0.22);
-  backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
 }

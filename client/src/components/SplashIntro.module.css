@@ -12,8 +12,8 @@
      as long as this overlay is mounted — it unmounts the instant the
      rewind timeline finishes, so the blur naturally lifts exactly when the
      intro animation ends, no separate timing to keep in sync. */
-  backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
 }
 
 .word {

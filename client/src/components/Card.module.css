@@ -23,8 +23,8 @@
      itself, which is what keeps this a "glass card in a pixel scrapbook"
      rather than an aesthetic clash. */
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.32), rgba(255, 234, 245, 0.2));
-  backdrop-filter: blur(26px) saturate(1.8);
   -webkit-backdrop-filter: blur(26px) saturate(1.8);
+  backdrop-filter: blur(26px) saturate(1.8);
   border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
