@@ -329,8 +329,9 @@ async function buildPositionedLayerUrl(src, gender, category, accessoryNote, has
 /**
  * Renders the headless body illustration + expression/eye-color face image
  * + every uploaded layer onto one offscreen canvas, in the same face/
- * bottom/top/outer/shoes/accessory z-order as the live stage, and returns a
- * single flattened `toDataURL()` PNG — the same positioning/masking as
+ * shoes/bottom/top/outer/accessory z-order as the live stage (see
+ * CATEGORY_ORDER/LAYER_Z_INDEX in dollLayout.js), and returns a single
+ * flattened `toDataURL()` PNG — the same positioning/masking as
  * `buildPositionedLayerUrl`, just composited straight onto the final canvas
  * instead of returned as a separate image.
  */

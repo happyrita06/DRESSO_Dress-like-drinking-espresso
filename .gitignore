@@ -21,3 +21,9 @@ npm-debug.log*
 
 # Personal reference images (style inspiration, not app assets/source)
 About app img/
+
+# Raw pixel dress-up reference/working images — scratch material, not app
+# source; curated copies actually used by the app live under
+# client/src/assets/dressup-examples/ and client/src/assets/dollsprites/.
+expression/
+sample/

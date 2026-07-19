@@ -5,21 +5,27 @@
  * pinned to hardcoded pixel offsets — keeps this tweakable in one place
  * without touching DollCanvas.jsx's render logic.
  *
- * z-index order (low → high) matches the brief: bottom/top/outer group
- * first, then shoes, then accessories sit on top of everything.
+ * z-index order (low → high) matches an explicit follow-up request
+ * (악세서리 > 상의 > 하의 > 신발, "먼저 입력한 게 제일 위 레이어" — accessory
+ * topmost, then top, then bottom, then shoes at the very bottom): shoes <
+ * bottom < top < accessory. 'outer' wasn't named in that request — kept
+ * directly under accessory (i.e. above top), matching its prior relative
+ * position as outerwear layered over the top.
  */
-export const CATEGORY_ORDER = ['bottom', 'top', 'outer', 'shoes', 'accessory']
+export const CATEGORY_ORDER = ['shoes', 'bottom', 'top', 'outer', 'accessory']
 
 // z-index order (low -> high): base illustration (implicit 0) < face (head
 // overlay) < hair (wig, framing the face with a cutout hole so face still
-// shows through) < bottom < top < outer < shoes < accessory.
+// shows through) < shoes < bottom < top < outer < accessory. See
+// CATEGORY_ORDER's own comment above for the follow-up request behind this
+// order.
 export const LAYER_Z_INDEX = {
   face: 1,
   hair: 2,
-  bottom: 3,
-  top: 4,
-  outer: 5,
-  shoes: 6,
+  shoes: 3,
+  bottom: 4,
+  top: 5,
+  outer: 6,
   accessory: 7,
 }
 
